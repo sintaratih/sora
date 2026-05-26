@@ -1,24 +1,32 @@
 import 'package:flutter/material.dart';
-import 'pages/auth/landing_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:device_preview/device_preview.dart';
+
+/// PAGES
 import 'pages/auth/login_page.dart';
-import 'pages/calendar/home_page.dart';
+import 'pages/home/home_page.dart';
+import 'pages/history/history_page.dart';
+import 'pages/notes/notes_page.dart';
 import 'pages/settings/settings_page.dart';
 
-// 🔥 TAMBAH INI (dummy dulu)
-class HistoryPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(child: Text("Riwayat")),
-    );
-  }
-}
-
+/// MAIN
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const SoraApp());
+
+  await Supabase.initialize(
+    url: 'https://tchpgvkehtkjobultzge.supabase.co',
+    anonKey: 'sb_publishable_qX5G5mF7-ZFaI_oh6esoUA_P_NP_-bc',
+  );
+
+  runApp(
+    DevicePreview(
+      enabled: true,
+      builder: (context) => const SoraApp(),
+    ),
+  );
 }
 
+/// APP
 class SoraApp extends StatefulWidget {
   const SoraApp({super.key});
 
@@ -31,7 +39,8 @@ class _SoraAppState extends State<SoraApp> {
 
   void toggleTheme(bool isDark) {
     setState(() {
-      _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
+      _themeMode =
+          isDark ? ThemeMode.dark : ThemeMode.light;
     });
   }
 
@@ -41,29 +50,57 @@ class _SoraAppState extends State<SoraApp> {
       debugShowCheckedModeBanner: false,
       title: 'Sora',
 
+      /// DEVICE PREVIEW
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
+
+      /// LIGHT THEME
       theme: ThemeData(
         brightness: Brightness.light,
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.deepPurple,
+        scaffoldBackgroundColor: Colors.white,
+
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          foregroundColor: Colors.black,
+        ),
       ),
+
+      /// DARK THEME
       darkTheme: ThemeData(
         brightness: Brightness.dark,
       ),
+
       themeMode: _themeMode,
 
-      initialRoute: '/',
+      /// AUTH CHECK
+      home: StreamBuilder<AuthState>(
+        stream:
+            Supabase.instance.client.auth.onAuthStateChange,
 
-      routes: {
-        '/': (context) => LandingPage(),
-        '/login': (context) => LoginPage(),
-        '/home': (context) => MainPage(
-              isDark: _themeMode == ThemeMode.dark,
+        builder: (context, snapshot) {
+          final session =
+              Supabase.instance.client.auth.currentSession;
+
+          if (session == null) {
+            return const LoginPage();
+          } else {
+            return MainPage(
+              isDark:
+                  _themeMode == ThemeMode.dark,
+
               onToggle: toggleTheme,
-            ),
-      },
+            );
+          }
+        },
+      ),
     );
   }
 }
 
+/// MAIN PAGE
 class MainPage extends StatefulWidget {
   final bool isDark;
   final Function(bool) onToggle;
@@ -75,7 +112,8 @@ class MainPage extends StatefulWidget {
   });
 
   @override
-  State<MainPage> createState() => _MainPageState();
+  State<MainPage> createState() =>
+      _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
@@ -84,8 +122,10 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      HomePage(),
-      HistoryPage(), // 🔥 tambah ini
+      const HomePage(),
+      NotesPage(),
+      const HistoryPage(),
+
       SettingsPage(
         isDark: widget.isDark,
         onToggle: widget.onToggle,
@@ -97,24 +137,37 @@ class _MainPageState extends State<MainPage> {
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
-        selectedItemColor: Colors.blue,
+
+        type: BottomNavigationBarType.fixed,
+
+        selectedItemColor: Colors.deepPurple,
+        unselectedItemColor: Colors.grey,
+
         onTap: (index) {
           setState(() {
             currentIndex = index;
           });
         },
+
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
+            icon: Icon(Icons.home),
             label: "Home",
           ),
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.note_alt_outlined),
+            label: "Notes",
+          ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
             label: "Riwayat",
           ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: "Pengaturan",
+            label: "Settings",
           ),
         ],
       ),

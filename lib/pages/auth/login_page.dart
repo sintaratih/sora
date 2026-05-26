@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
- State<LoginPage> createState() => _LoginPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
@@ -14,11 +17,51 @@ class _LoginPageState extends State<LoginPage> {
   final passwordController = TextEditingController();
 
   bool obscure = true;
+  bool isLoading = false;
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacementNamed(context, '/home');
+  /// LOGIN
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    try {
+      setState(() => isLoading = true);
+
+      await Supabase.instance.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      if (!mounted) return;
+
+      _showMsg("Login berhasil!");
+
+      
+    } on AuthException catch (e) {
+      _showMsg(e.message);
+    } catch (e) {
+      _showMsg("Terjadi kesalahan");
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
+  }
+
+  /// SNACKBAR
+  void _showMsg(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -32,9 +75,11 @@ class _LoginPageState extends State<LoginPage> {
             width: 400,
             padding: const EdgeInsets.all(24),
             margin: const EdgeInsets.all(16),
+
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
+
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -46,37 +91,45 @@ class _LoginPageState extends State<LoginPage> {
 
             child: Form(
               key: _formKey,
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
 
-                  /// 🔥 LOGO (ganti nanti)
+                  /// LOGO
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+
                     children: [
                       Container(
                         width: 40,
                         height: 40,
+
                         decoration: BoxDecoration(
                           color: Colors.deepPurple,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.star, color: Colors.white),
+
+                        child: const Icon(
+                          Icons.star,
+                          color: Colors.white,
+                        ),
                       ),
+
                       const SizedBox(width: 10),
+
                       const Text(
                         "sora",
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
-                      )
+                      ),
                     ],
                   ),
 
                   const SizedBox(height: 20),
 
-                  /// TITLE
                   const Text(
                     "Selamat datang kembali!",
                     style: TextStyle(
@@ -89,33 +142,41 @@ class _LoginPageState extends State<LoginPage> {
 
                   const Text(
                     "Masuk untuk melanjutkan ke Sora.",
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(
+                      color: Colors.grey,
+                    ),
                   ),
 
                   const SizedBox(height: 24),
 
                   /// EMAIL
-                  Align(
+                  const Align(
                     alignment: Alignment.centerLeft,
-                    child: const Text("Email atau Username"),
+                    child: Text("Email"),
                   ),
+
                   const SizedBox(height: 6),
 
                   TextFormField(
                     controller: emailController,
+
                     decoration: InputDecoration(
-                      hintText: "Email/Username",
+                      hintText: "Email",
+
                       filled: true,
                       fillColor: Colors.grey[100],
+
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
                     ),
+
                     validator: (v) {
                       if (v == null || v.isEmpty) {
-                        return "Tidak boleh kosong";
+                        return "Email tidak boleh kosong";
                       }
+
                       return null;
                     },
                   ),
@@ -123,28 +184,33 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 16),
 
                   /// PASSWORD
-                  Align(
+                  const Align(
                     alignment: Alignment.centerLeft,
-                    child: const Text("Password"),
+                    child: Text("Password"),
                   ),
+
                   const SizedBox(height: 6),
 
                   TextFormField(
                     controller: passwordController,
                     obscureText: obscure,
+
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.grey[100],
+
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
+
                       suffixIcon: IconButton(
                         icon: Icon(
                           obscure
                               ? Icons.visibility_off
                               : Icons.visibility,
                         ),
+
                         onPressed: () {
                           setState(() {
                             obscure = !obscure;
@@ -152,73 +218,77 @@ class _LoginPageState extends State<LoginPage> {
                         },
                       ),
                     ),
+
                     validator: (v) {
                       if (v == null || v.isEmpty) {
-                        return "Tidak boleh kosong";
+                        return "Password tidak boleh kosong";
                       }
+
                       return null;
                     },
                   ),
 
-                  /// LUPA PASSWORD
                   Align(
                     alignment: Alignment.centerRight,
+
                     child: TextButton(
                       onPressed: () {},
-                      child: const Text("Lupa password?"),
+
+                      child: const Text(
+                        "Lupa password?",
+                      ),
                     ),
                   ),
 
                   const SizedBox(height: 10),
 
-                  /// BUTTON LOGIN (GRADIENT)
+                  /// BUTTON LOGIN
                   SizedBox(
                     width: double.infinity,
+
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
+
                         gradient: const LinearGradient(
                           colors: [
                             Color(0xFF7B61FF),
-                            Color.fromARGB(255, 123, 97, 255),
+                            Color(0xFF5A3FFF),
                           ],
                         ),
                       ),
+
                       child: ElevatedButton(
-                        onPressed: _login,
+                        onPressed: isLoading ? null : _login,
+
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(0, 243, 25, 25),
-                          shadowColor: const Color.fromARGB(0, 211, 93, 93),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                          ),
                         ),
-                        child: const Text("Masuk"),
+
+                        child: isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                "Masuk",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  /// DIVIDER
-                  Row(
-                    children: const [
-                      Expanded(child: Divider()),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Text("atau masuk dengan"),
-                      ),
-                      Expanded(child: Divider()),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  /// GOOGLE & APPLE
-                  Row(
-                    children: [
-                      Expanded(child: _socialButton("Google")),
-                      const SizedBox(width: 10),
-                      Expanded(child: _socialButton("Apple")),
-                    ],
                   ),
 
                   const SizedBox(height: 20),
@@ -226,12 +296,22 @@ class _LoginPageState extends State<LoginPage> {
                   /// REGISTER
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+
                     children: [
-                      const Text("Belum punya akun? "),
+                      const Text(
+                        "Belum punya akun? ",
+                      ),
+
                       GestureDetector(
                         onTap: () {
-                          Navigator.pushNamed(context, '/register');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const RegisterPage(),
+                            ),
+                          );
                         },
+
                         child: const Text(
                           "Daftar di sini",
                           style: TextStyle(
@@ -241,25 +321,13 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _socialButton(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      alignment: Alignment.center,
-      child: Text(text),
     );
   }
 }
