@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:sora/pages/notes/add_note_page.dart';
 import 'package:sora/pages/notes/note_detail_page.dart';
 import 'package:sora/services/note_service.dart';
@@ -18,16 +17,31 @@ class _NotesPageState
   final noteService = NoteService();
 
   List<Map<String, dynamic>> notes = [];
+  List<Map<String, dynamic>>
+      filteredNotes = [];
 
   bool isLoading = true;
 
-  DateTime selectedDay = DateTime.now();
-  DateTime focusedDay = DateTime.now();
+  final searchController =
+      TextEditingController();
+
+  String selectedSort = "newest";
 
   @override
   void initState() {
     super.initState();
+
     fetchNotes();
+
+    searchController.addListener(() {
+      applyFilter();
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   /// GET NOTES
@@ -38,8 +52,13 @@ class _NotesPageState
       final data =
           await noteService.getNotes();
 
+      notes =
+          List<Map<String, dynamic>>
+              .from(data);
+
+      applyFilter();
+
       setState(() {
-        notes = data;
         isLoading = false;
       });
 
@@ -59,43 +78,254 @@ class _NotesPageState
     }
   }
 
-  /// FILTER NOTES
-  List<Map<String, dynamic>> get filteredNotes {
+  /// SEARCH + SORT
+  void applyFilter() {
 
-    return notes.where((note) {
+    List<Map<String, dynamic>>
+        result = List.from(notes);
 
-      final rawDate =
-          note['created_at']
-              ?.toString();
+    /// SEARCH
+    final keyword =
+        searchController.text
+            .toLowerCase();
 
-      if (rawDate == null) {
-        return false;
-      }
+    if (keyword.isNotEmpty) {
 
-      final d =
-          DateTime.tryParse(
-        rawDate,
-      );
+      result = result.where((note) {
 
-      if (d == null) {
-        return false;
-      }
+        final title =
+            note['title']
+                    ?.toString()
+                    .toLowerCase() ??
+                '';
 
-      return d.year ==
-              selectedDay.year &&
-          d.month ==
-              selectedDay.month &&
-          d.day ==
-              selectedDay.day;
+        final content =
+            note['content']
+                    ?.toString()
+                    .toLowerCase() ??
+                '';
 
-    }).toList();
+        return title.contains(keyword) ||
+            content.contains(keyword);
+
+      }).toList();
+    }
+
+    /// SORT
+    if (selectedSort == "az") {
+
+      result.sort((a, b) =>
+          (a['title'] ?? '')
+              .toString()
+              .compareTo(
+                (b['title'] ?? '')
+                    .toString(),
+              ));
+
+    } else if (selectedSort ==
+        "oldest") {
+
+      result.sort((a, b) =>
+          DateTime.parse(
+            a['created_at'],
+          ).compareTo(
+            DateTime.parse(
+              b['created_at'],
+            ),
+          ));
+
+    } else {
+
+      result.sort((a, b) =>
+          DateTime.parse(
+            b['created_at'],
+          ).compareTo(
+            DateTime.parse(
+              a['created_at'],
+            ),
+          ));
+    }
+
+    setState(() {
+      filteredNotes = result;
+    });
+  }
+
+  /// NOTE CARD
+  Widget noteCard(
+      Map<String, dynamic> note) {
+
+    return GestureDetector(
+
+      onTap: () async {
+
+        await Navigator.push(
+          context,
+
+          MaterialPageRoute(
+            builder: (_) =>
+                NoteDetailPage(
+              note: note,
+            ),
+          ),
+        );
+
+        fetchNotes();
+      },
+
+      child: Container(
+        margin:
+            const EdgeInsets.only(
+          bottom: 16,
+        ),
+
+        padding:
+            const EdgeInsets.all(18),
+
+        decoration: BoxDecoration(
+          color: Colors.white,
+
+          borderRadius:
+              BorderRadius.circular(
+            22,
+          ),
+
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black
+                  .withOpacity(0.05),
+
+              blurRadius: 10,
+            ),
+          ],
+        ),
+
+        child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+
+          children: [
+
+            Row(
+              children: [
+
+                Container(
+                  padding:
+                      const EdgeInsets
+                          .all(10),
+
+                  decoration:
+                      BoxDecoration(
+                    color:
+                        Colors.deepPurple
+                            .withOpacity(
+                      0.1,
+                    ),
+
+                    borderRadius:
+                        BorderRadius
+                            .circular(
+                      14,
+                    ),
+                  ),
+
+                  child: const Icon(
+                    Icons.notes,
+                    color:
+                        Colors.deepPurple,
+                  ),
+                ),
+
+                const SizedBox(
+                  width: 14,
+                ),
+
+                Expanded(
+                  child: Text(
+                    note['title'] ?? '',
+
+                    maxLines: 1,
+
+                    overflow:
+                        TextOverflow
+                            .ellipsis,
+
+                    style:
+                        const TextStyle(
+                      fontSize: 18,
+
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                const Icon(
+                  Icons
+                      .arrow_forward_ios,
+                  size: 16,
+                  color: Colors.grey,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            Text(
+              note['content'] ?? '',
+
+              maxLines: 3,
+
+              overflow:
+                  TextOverflow.ellipsis,
+
+              style: TextStyle(
+                color:
+                    Colors.grey.shade700,
+
+                height: 1.5,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Row(
+              children: [
+
+                Icon(
+                  Icons.access_time,
+                  size: 16,
+                  color:
+                      Colors.grey.shade500,
+                ),
+
+                const SizedBox(width: 6),
+
+                Text(
+                  note['created_at']
+                      .toString()
+                      .substring(
+                        0,
+                        16,
+                      ),
+
+                  style: TextStyle(
+                    color:
+                        Colors.grey.shade500,
+
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-
-    final todayNotes =
-        filteredNotes;
 
     return Scaffold(
       backgroundColor:
@@ -103,586 +333,303 @@ class _NotesPageState
         0xFFF7F4FB,
       ),
 
-      appBar: AppBar(
-        backgroundColor:
-            const Color(
-          0xFFF7F4FB,
-        ),
+      body: SafeArea(
 
-        elevation: 0,
+        child: isLoading
 
-        centerTitle: false,
+            ? const Center(
+                child:
+                    CircularProgressIndicator(),
+              )
 
-        title: const Column(
-          crossAxisAlignment:
-              CrossAxisAlignment
-                  .start,
+            : Column(
+                children: [
 
-          children: [
+                  const SizedBox(
+                    height: 24,
+                  ),
 
-            Text(
-              "Kalender Catatan",
+                  /// TITLE
+                  const Center(
+                    child: Text(
+                      "Catatan",
 
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight:
-                    FontWeight.bold,
-                fontSize: 24,
-              ),
-            ),
+                      style: TextStyle(
+                        fontSize: 30,
 
-            SizedBox(height: 4),
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+                  ),
 
-            Text(
-              "Kelola semua catatanmu ✨",
+                  const SizedBox(
+                    height: 24,
+                  ),
 
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ),
+                  /// SEARCH + FILTER
+                  Padding(
+                    padding:
+                        const EdgeInsets
+                            .symmetric(
+                      horizontal: 16,
+                    ),
 
-      body: isLoading
+                    child: Row(
+                      children: [
 
-          ? const Center(
-              child:
-                  CircularProgressIndicator(),
-            )
+                        /// SEARCH
+                        Expanded(
+                          child: Container(
+                            height: 55,
 
-          : SafeArea(
-              child:
-                  SingleChildScrollView(
-
-                child: Padding(
-                  padding:
-                      const EdgeInsets
-                          .all(16),
-
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment
-                            .start,
-
-                    children: [
-
-                      /// CALENDAR
-                      Container(
-                        padding:
-                            const EdgeInsets
-                                .all(12),
-
-                        decoration:
-                            BoxDecoration(
-                          color:
-                              Colors.white,
-
-                          borderRadius:
-                              BorderRadius
-                                  .circular(
-                            22,
-                          ),
-
-                          boxShadow: [
-                            BoxShadow(
-                              blurRadius:
-                                  12,
-
-                              color: Colors
-                                  .black
-                                  .withOpacity(
-                                0.04,
-                              ),
-                            )
-                          ],
-                        ),
-
-                        child:
-                            TableCalendar(
-
-                          focusedDay:
-                              focusedDay,
-
-                          firstDay:
-                              DateTime(
-                                  2020),
-
-                          lastDay:
-                              DateTime(
-                                  2030),
-
-                          calendarFormat:
-                              CalendarFormat
-                                  .month,
-
-                          selectedDayPredicate:
-                              (day) =>
-                                  isSameDay(
-                            day,
-                            selectedDay,
-                          ),
-
-                          /// MARKER
-                          eventLoader:
-                              (day) {
-
-                            return notes
-                                .where(
-                              (note) {
-
-                                final rawDate =
-                                    note['created_at']
-                                        ?.toString();
-
-                                if (rawDate ==
-                                    null) {
-                                  return false;
-                                }
-
-                                final d =
-                                    DateTime.tryParse(
-                                  rawDate,
-                                );
-
-                                if (d ==
-                                    null) {
-                                  return false;
-                                }
-
-                                return isSameDay(
-                                  d,
-                                  day,
-                                );
-                              },
-                            ).toList();
-                          },
-
-                          onDaySelected:
-                              (
-                            day,
-                            focus,
-                          ) {
-
-                            setState(() {
-                              selectedDay =
-                                  day;
-
-                              focusedDay =
-                                  focus;
-                            });
-                          },
-
-                          headerStyle:
-                              const HeaderStyle(
-
-                            formatButtonVisible:
-                                false,
-
-                            titleCentered:
-                                true,
-
-                            leftChevronIcon:
-                                Icon(
-                              Icons
-                                  .chevron_left,
-                            ),
-
-                            rightChevronIcon:
-                                Icon(
-                              Icons
-                                  .chevron_right,
-                            ),
-
-                            titleTextStyle:
-                                TextStyle(
-                              fontWeight:
-                                  FontWeight
-                                      .bold,
-
-                              fontSize:
-                                  16,
-                            ),
-                          ),
-
-                          calendarStyle:
-                              CalendarStyle(
-
-                            outsideDaysVisible:
-                                false,
-
-                            todayDecoration:
+                            decoration:
                                 BoxDecoration(
-                              color: Colors
-                                  .deepPurple
-                                  .shade200,
+                              color:
+                                  Colors
+                                      .white,
 
-                              shape:
-                                  BoxShape
-                                      .circle,
+                              borderRadius:
+                                  BorderRadius.circular(
+                                18,
+                              ),
                             ),
 
-                            selectedDecoration:
-                                const BoxDecoration(
-                              color: Colors
-                                  .deepPurple,
+                            child: TextField(
+                              controller:
+                                  searchController,
 
-                              shape:
-                                  BoxShape
-                                      .circle,
-                            ),
+                              decoration:
+                                  InputDecoration(
+                                hintText:
+                                    "Cari catatan...",
 
-                            markerDecoration:
-                                const BoxDecoration(
-                              color: Colors
-                                  .orange,
+                                prefixIcon:
+                                    const Icon(
+                                  Icons.search,
+                                ),
 
-                              shape:
-                                  BoxShape
-                                      .circle,
-                            ),
+                                border:
+                                    InputBorder
+                                        .none,
 
-                            todayTextStyle:
-                                const TextStyle(
-                              color: Colors
-                                  .white,
-
-                              fontWeight:
-                                  FontWeight
-                                      .bold,
-                            ),
-
-                            selectedTextStyle:
-                                const TextStyle(
-                              color: Colors
-                                  .white,
-
-                              fontWeight:
-                                  FontWeight
-                                      .bold,
-                            ),
-                          ),
-
-                          daysOfWeekStyle:
-                              DaysOfWeekStyle(
-
-                            weekdayStyle:
-                                TextStyle(
-                              color: Colors
-                                  .grey[600],
-
-                              fontWeight:
-                                  FontWeight
-                                      .w500,
-                            ),
-
-                            weekendStyle:
-                                const TextStyle(
-                              color: Colors
-                                  .redAccent,
-
-                              fontWeight:
-                                  FontWeight
-                                      .w500,
+                                contentPadding:
+                                    const EdgeInsets.symmetric(
+                                  vertical:
+                                      15,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
 
-                      const SizedBox(
-                        height: 20,
-                      ),
+                        const SizedBox(
+                          width: 12,
+                        ),
 
-                      /// TITLE
-                      Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment
-                                .spaceBetween,
+                        /// FILTER ICON
+                        Container(
+                          height: 55,
+                          width: 55,
 
-                        children: [
+                          decoration:
+                              BoxDecoration(
+                            color:
+                                Colors.white,
 
-                          const Text(
-                            "Catatan Hari Ini",
-
-                            style:
-                                TextStyle(
-                              fontSize:
-                                  18,
-
-                              fontWeight:
-                                  FontWeight
-                                      .bold,
+                            borderRadius:
+                                BorderRadius.circular(
+                              18,
                             ),
                           ),
 
-                          Text(
-                            "${todayNotes.length} catatan",
+                          child:
+                              PopupMenuButton<
+                                  String>(
 
-                            style:
-                                const TextStyle(
+                            icon: const Icon(
+                              Icons.tune,
                               color:
-                                  Colors.grey,
+                                  Colors.black,
                             ),
-                          ),
-                        ],
-                      ),
 
-                      const SizedBox(
-                        height: 16,
-                      ),
+                            onSelected:
+                                (value) {
 
-                      /// EMPTY
-                      if (todayNotes
-                          .isEmpty)
+                              setState(() {
+                                selectedSort =
+                                    value;
+                              });
 
-                        Center(
-                          child: Column(
-                            children: [
+                              applyFilter();
+                            },
 
-                              const SizedBox(
-                                height:
-                                    40,
-                              ),
+                            itemBuilder:
+                                (context) => [
 
-                              Icon(
-                                Icons
-                                    .sticky_note_2_outlined,
+                              const PopupMenuItem(
+                                value:
+                                    "newest",
 
-                                size: 80,
-
-                                color: Colors
-                                    .grey[400],
-                              ),
-
-                              const SizedBox(
-                                height:
-                                    14,
-                              ),
-
-                              const Text(
-                                "Belum ada catatan",
-
-                                style:
-                                    TextStyle(
-                                  fontSize:
-                                      18,
-
-                                  fontWeight:
-                                      FontWeight
-                                          .bold,
+                                child: Text(
+                                  "Terbaru",
                                 ),
                               ),
 
-                              const SizedBox(
-                                height:
-                                    6,
+                              const PopupMenuItem(
+                                value:
+                                    "oldest",
+
+                                child: Text(
+                                  "Terlama",
+                                ),
                               ),
 
-                              Text(
-                                "Tambahkan catatan baru ✨",
+                              const PopupMenuItem(
+                                value: "az",
 
-                                style:
-                                    TextStyle(
-                                  color: Colors
-                                      .grey[600],
+                                child: Text(
+                                  "A-Z",
                                 ),
                               ),
                             ],
                           ),
                         ),
+                      ],
+                    ),
+                  ),
 
-                      /// NOTES
-                      if (todayNotes
-                          .isNotEmpty)
+                  const SizedBox(
+                    height: 20,
+                  ),
 
-                        ListView.builder(
+                  /// TOTAL
+                  Padding(
+                    padding:
+                        const EdgeInsets
+                            .symmetric(
+                      horizontal: 18,
+                    ),
 
-                          shrinkWrap:
-                              true,
+                    child: Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .end,
 
-                          physics:
-                              const NeverScrollableScrollPhysics(),
+                      children: [
 
-                          itemCount:
-                              todayNotes
-                                  .length,
+                        Text(
+                          "${filteredNotes.length} catatan",
 
-                          itemBuilder:
-                              (
-                            context,
-                            index,
-                          ) {
+                          style: TextStyle(
+                            color:
+                                Colors.grey
+                                    .shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
-                            final note =
-                                todayNotes[
-                                    index];
+                  const SizedBox(
+                    height: 14,
+                  ),
 
-                            return GestureDetector(
+                  /// EMPTY
+                  if (filteredNotes
+                      .isEmpty)
 
-                              onTap:
-                                  () async {
+                    Expanded(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment:
+                              MainAxisAlignment
+                                  .center,
 
-                                await Navigator
-                                    .push(
-                                  context,
+                          children: [
 
-                                  MaterialPageRoute(
-                                    builder:
-                                        (_) =>
-                                            NoteDetailPage(
-                                      note:
-                                          note,
-                                    ),
-                                  ),
-                                );
+                            Icon(
+                              Icons
+                                  .sticky_note_2_outlined,
 
-                                fetchNotes();
-                              },
+                              size: 90,
 
-                              child:
-                                  Container(
+                              color: Colors
+                                  .grey[400],
+                            ),
 
-                                margin:
-                                    const EdgeInsets
-                                        .only(
-                                  bottom:
-                                      16,
-                                ),
+                            const SizedBox(
+                              height: 16,
+                            ),
 
-                                padding:
-                                    const EdgeInsets
-                                        .all(
-                                  16,
-                                ),
+                            const Text(
+                              "Belum ada catatan",
 
-                                decoration:
-                                    BoxDecoration(
-
-                                  color:
-                                      Colors.white,
-
-                                  borderRadius:
-                                      BorderRadius.circular(
+                              style:
+                                  TextStyle(
+                                fontSize:
                                     20,
-                                  ),
 
-                                  border:
-                                      const Border(
-                                    left:
-                                        BorderSide(
-                                      color:
-                                          Colors.deepPurple,
-
-                                      width:
-                                          5,
-                                    ),
-                                  ),
-
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors
-                                          .black
-                                          .withOpacity(
-                                        0.05,
-                                      ),
-
-                                      blurRadius:
-                                          10,
-                                    ),
-                                  ],
-                                ),
-
-                                child:
-                                    Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment
-                                          .start,
-
-                                  children: [
-
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment
-                                              .spaceBetween,
-
-                                      children: [
-
-                                        Expanded(
-                                          child:
-                                              Text(
-                                            note['title'] ??
-                                                '',
-
-                                            style:
-                                                const TextStyle(
-                                              fontSize:
-                                                  18,
-
-                                              fontWeight:
-                                                  FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-
-                                        const Icon(
-                                          Icons
-                                              .arrow_forward_ios,
-
-                                          size:
-                                              18,
-
-                                          color:
-                                              Colors.grey,
-                                        ),
-                                      ],
-                                    ),
-
-                                    const SizedBox(
-                                      height:
-                                          10,
-                                    ),
-
-                                    Text(
-                                      note['content'] ??
-                                          '',
-
-                                      maxLines:
-                                          2,
-
-                                      overflow:
-                                          TextOverflow
-                                              .ellipsis,
-
-                                      style:
-                                          TextStyle(
-                                        color: Colors
-                                            .grey
-                                            .shade700,
-
-                                        height:
-                                            1.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                fontWeight:
+                                    FontWeight
+                                        .bold,
                               ),
-                            );
-                          },
+                            ),
+
+                            const SizedBox(
+                              height: 8,
+                            ),
+
+                            Text(
+                              "Tambahkan catatan baru ✨",
+
+                              style:
+                                  TextStyle(
+                                color: Colors
+                                    .grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  /// NOTES
+                  if (filteredNotes
+                      .isNotEmpty)
+
+                    Expanded(
+                      child:
+                          ListView.builder(
+                        padding:
+                            const EdgeInsets
+                                .symmetric(
+                          horizontal: 16,
                         ),
 
-                      const SizedBox(
-                        height: 100,
+                        itemCount:
+                            filteredNotes
+                                .length,
+
+                        itemBuilder:
+                            (
+                          context,
+                          index,
+                        ) {
+
+                          return noteCard(
+                            filteredNotes[
+                                index],
+                          );
+                        },
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                ],
               ),
-            ),
+      ),
 
       floatingActionButton:
           FloatingActionButton(
-
         backgroundColor:
             Colors.deepPurple,
 

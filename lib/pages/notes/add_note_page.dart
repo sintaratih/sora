@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sora/services/note_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AddNotePage extends StatefulWidget {
   final Map<String, dynamic>? note;
@@ -16,7 +17,11 @@ class AddNotePage extends StatefulWidget {
 
 class _AddNotePageState
     extends State<AddNotePage> {
+
   final noteService = NoteService();
+
+  final supabase =
+      Supabase.instance.client;
 
   final titleController =
       TextEditingController();
@@ -32,6 +37,7 @@ class _AddNotePageState
     super.initState();
 
     if (isEdit) {
+
       titleController.text =
           widget.note!['title'] ?? '';
 
@@ -49,6 +55,7 @@ class _AddNotePageState
 
   /// SAVE NOTE
   Future<void> saveNote() async {
+
     final title =
         titleController.text.trim();
 
@@ -57,6 +64,7 @@ class _AddNotePageState
 
     if (title.isEmpty ||
         content.isEmpty) {
+
       ScaffoldMessenger.of(context)
           .showSnackBar(
         const SnackBar(
@@ -69,8 +77,10 @@ class _AddNotePageState
     }
 
     try {
+
       /// EDIT NOTE
       if (isEdit) {
+
         await noteService.updateNote(
           id:
               widget.note!['id']
@@ -83,16 +93,38 @@ class _AddNotePageState
 
       /// ADD NOTE
       else {
+
         await noteService.addNote(
           title: title,
           content: content,
         );
+
+        /// INSERT HISTORY
+        await supabase
+            .from('history')
+            .insert({
+
+          'user_id':
+              supabase
+                  .auth
+                  .currentUser!
+                  .id,
+
+          'title': title,
+
+          'description':
+              content,
+
+          'type': 'note',
+        });
       }
 
       if (!mounted) return;
 
       Navigator.pop(context, true);
+
     } catch (e) {
+
       ScaffoldMessenger.of(context)
           .showSnackBar(
         SnackBar(
@@ -106,12 +138,15 @@ class _AddNotePageState
 
   /// DELETE NOTE
   Future<void> deleteNote() async {
+
     final confirm =
         await showDialog(
+
       context: context,
 
       builder: (context) =>
           AlertDialog(
+
         title: const Text(
           "Hapus Catatan",
         ),
@@ -121,8 +156,10 @@ class _AddNotePageState
         ),
 
         actions: [
+
           TextButton(
             onPressed: () {
+
               Navigator.pop(
                 context,
                 false,
@@ -136,6 +173,7 @@ class _AddNotePageState
 
           ElevatedButton(
             onPressed: () {
+
               Navigator.pop(
                 context,
                 true,
@@ -157,6 +195,28 @@ class _AddNotePageState
     );
 
     if (confirm == true) {
+
+      /// INSERT DELETE HISTORY
+      await supabase
+          .from('history')
+          .insert({
+
+        'user_id':
+            supabase
+                .auth
+                .currentUser!
+                .id,
+
+        'title':
+            widget.note!['title'],
+
+        'description':
+            'Catatan dihapus',
+
+        'type':
+            'deleted_task',
+      });
+
       await noteService.deleteNote(
         widget.note!['id']
             .toString(),
@@ -170,15 +230,19 @@ class _AddNotePageState
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor:
           const Color(0xfff5f5f5),
 
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor:
+            Colors.white,
+
         elevation: 0,
 
         title: Text(
+
           isEdit
               ? "Edit Catatan"
               : "Tambah Catatan",
@@ -200,6 +264,7 @@ class _AddNotePageState
               CrossAxisAlignment.start,
 
           children: [
+
             /// TITLE
             const Text(
               "Judul",
@@ -211,7 +276,9 @@ class _AddNotePageState
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(
+              height: 10,
+            ),
 
             TextField(
               controller:
@@ -219,15 +286,18 @@ class _AddNotePageState
 
               decoration:
                   InputDecoration(
+
                 hintText:
                     "Masukkan judul",
 
                 filled: true,
+
                 fillColor:
                     Colors.white,
 
                 border:
                     OutlineInputBorder(
+
                   borderRadius:
                       BorderRadius
                           .circular(16),
@@ -238,7 +308,9 @@ class _AddNotePageState
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(
+              height: 24,
+            ),
 
             /// CONTENT
             const Text(
@@ -251,7 +323,9 @@ class _AddNotePageState
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(
+              height: 10,
+            ),
 
             TextField(
               controller:
@@ -261,15 +335,18 @@ class _AddNotePageState
 
               decoration:
                   InputDecoration(
+
                 hintText:
                     "Tulis sesuatu...",
 
                 filled: true,
+
                 fillColor:
                     Colors.white,
 
                 border:
                     OutlineInputBorder(
+
                   borderRadius:
                       BorderRadius
                           .circular(16),
@@ -280,23 +357,28 @@ class _AddNotePageState
               ),
             ),
 
-            const SizedBox(height: 40),
+            const SizedBox(
+              height: 40,
+            ),
 
-            /// SAVE / UPDATE BUTTON
+            /// SAVE BUTTON
             SizedBox(
               width: double.infinity,
               height: 55,
 
               child: ElevatedButton(
-                onPressed: saveNote,
+                onPressed:
+                    saveNote,
 
                 style:
                     ElevatedButton.styleFrom(
+
                   backgroundColor:
                       Colors.deepPurple,
 
                   shape:
                       RoundedRectangleBorder(
+
                     borderRadius:
                         BorderRadius
                             .circular(16),
@@ -304,14 +386,19 @@ class _AddNotePageState
                 ),
 
                 child: Text(
+
                   isEdit
                       ? "Update"
                       : "Simpan",
 
                   style:
                       const TextStyle(
-                    color: Colors.white,
+
+                    color:
+                        Colors.white,
+
                     fontSize: 16,
+
                     fontWeight:
                         FontWeight.bold,
                   ),
@@ -321,6 +408,7 @@ class _AddNotePageState
 
             /// DELETE BUTTON
             if (isEdit) ...[
+
               const SizedBox(
                 height: 12,
               ),
@@ -335,11 +423,13 @@ class _AddNotePageState
 
                   style:
                       ElevatedButton.styleFrom(
+
                     backgroundColor:
                         Colors.red,
 
                     shape:
                         RoundedRectangleBorder(
+
                       borderRadius:
                           BorderRadius
                               .circular(
@@ -354,7 +444,9 @@ class _AddNotePageState
                     style: TextStyle(
                       color:
                           Colors.white,
+
                       fontSize: 16,
+
                       fontWeight:
                           FontWeight.bold,
                     ),

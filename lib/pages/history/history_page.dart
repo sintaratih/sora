@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sora/services/note_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -12,28 +12,42 @@ class HistoryPage extends StatefulWidget {
 class _HistoryPageState
     extends State<HistoryPage> {
 
-  final noteService = NoteService();
+  final supabase = Supabase.instance.client;
 
-  List<Map<String, dynamic>> notes = [];
+  List<Map<String, dynamic>> histories = [];
 
   bool isLoading = true;
+
+  String selectedFilter = "all";
 
   @override
   void initState() {
     super.initState();
-    fetchNotes();
+    fetchHistory();
   }
 
-  /// GET NOTES
-  Future<void> fetchNotes() async {
+  /// GET HISTORY
+  Future<void> fetchHistory() async {
 
     try {
 
-      final data =
-          await noteService.getNotes();
+      final user =
+          supabase.auth.currentUser;
+
+      final data = await supabase
+          .from('history')
+          .select()
+          .eq('user_id', user!.id)
+          .order(
+            'created_at',
+            ascending: false,
+          );
 
       setState(() {
-        notes = data;
+        histories =
+            List<Map<String, dynamic>>
+                .from(data);
+
         isLoading = false;
       });
 
@@ -53,131 +67,342 @@ class _HistoryPageState
     }
   }
 
+  /// FILTER
+  List<Map<String, dynamic>>
+      get filteredHistory {
+
+    if (selectedFilter == "all") {
+      return histories;
+    }
+
+    return histories.where((item) {
+      return item['type'] ==
+          selectedFilter;
+    }).toList();
+  }
+
+  /// FILTER BUTTON
+  Widget filterButton(
+    String label,
+    String value,
+  ) {
+
+    final isActive =
+        selectedFilter == value;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedFilter = value;
+        });
+      },
+
+      child: Container(
+        margin:
+            const EdgeInsets.only(
+          right: 8,
+        ),
+
+        padding:
+            const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 7,
+        ),
+
+        decoration: BoxDecoration(
+          color: isActive
+              ? Colors.deepPurple
+              : Colors.white,
+
+          borderRadius:
+              BorderRadius.circular(12),
+
+          border: Border.all(
+            color: Colors.deepPurple,
+          ),
+        ),
+
+        child: Text(
+          label,
+
+          style: TextStyle(
+            fontSize: 13,
+
+            color: isActive
+                ? Colors.white
+                : Colors.deepPurple,
+
+            fontWeight:
+                FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    final data = filteredHistory;
 
     return Scaffold(
       backgroundColor:
           const Color(0xfff5f5f5),
 
-      appBar: AppBar(
-        backgroundColor:
-            Colors.white,
+      body: SafeArea(
+        child: isLoading
 
-        elevation: 0,
+            ? const Center(
+                child:
+                    CircularProgressIndicator(),
+              )
 
-        title: const Text(
-          "Riwayat",
+            : Column(
+                children: [
 
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight:
-                FontWeight.bold,
-          ),
-        ),
-      ),
-
-      body: isLoading
-          ? const Center(
-              child:
-                  CircularProgressIndicator(),
-            )
-
-          : notes.isEmpty
-
-              ? const Center(
-                  child: Text(
-                    "Belum ada riwayat",
-                  ),
-                )
-
-              : ListView.builder(
-                  padding:
-                      const EdgeInsets.all(
-                    16,
+                  const SizedBox(
+                    height: 12,
                   ),
 
-                  itemCount:
-                      notes.length,
+                  /// FILTER BUTTONS
+                  SizedBox(
+                    height: 42,
 
-                  itemBuilder:
-                      (context, index) {
-
-                    final note =
-                        notes[index];
-
-                    return Container(
-                      margin:
-                          const EdgeInsets.only(
-                        bottom: 16,
-                      ),
+                    child: ListView(
+                      scrollDirection:
+                          Axis.horizontal,
 
                       padding:
-                          const EdgeInsets.all(
-                        16,
+                          const EdgeInsets.symmetric(
+                        horizontal: 16,
                       ),
 
-                      decoration:
-                          BoxDecoration(
-                        color:
-                            Colors.white,
+                      children: [
 
-                        borderRadius:
-                            BorderRadius
-                                .circular(20),
+                        filterButton(
+                          "Semua",
+                          "all",
+                        ),
 
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors
-                                .black
-                                .withOpacity(
-                              0.05,
+                        filterButton(
+                          "Catatan",
+                          "note",
+                        ),
+
+                        filterButton(
+                          "Selesai",
+                          "done_task",
+                        ),
+
+                        filterButton(
+                          "Dihapus",
+                          "deleted_task",
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 10,
+                  ),
+
+                  /// HISTORY LIST
+                  Expanded(
+                    child: data.isEmpty
+
+                        ? const Center(
+                            child: Text(
+                              "Belum ada riwayat",
+                            ),
+                          )
+
+                        : ListView.builder(
+                            padding:
+                                const EdgeInsets.all(
+                              16,
                             ),
 
-                            blurRadius: 10,
+                            itemCount:
+                                data.length,
+
+                            itemBuilder:
+                                (
+                                  context,
+                                  index,
+                                ) {
+
+                              final item =
+                                  data[index];
+
+                              return Container(
+                                margin:
+                                    const EdgeInsets.only(
+                                  bottom: 14,
+                                ),
+
+                                padding:
+                                    const EdgeInsets.all(
+                                  16,
+                                ),
+
+                                decoration:
+                                    BoxDecoration(
+                                  color:
+                                      Colors.white,
+
+                                  borderRadius:
+                                      BorderRadius
+                                          .circular(
+                                    18,
+                                  ),
+
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors
+                                          .black
+                                          .withOpacity(
+                                        0.04,
+                                      ),
+
+                                      blurRadius: 10,
+
+                                      offset:
+                                          const Offset(
+                                        0,
+                                        4,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment
+                                          .start,
+
+                                  children: [
+
+                                    Row(
+                                      children: [
+
+                                        Icon(
+
+                                          item['type'] ==
+                                                  'note'
+
+                                              ? Icons.notes
+
+                                              : item['type'] ==
+                                                      'task'
+
+                                                  ? Icons
+                                                      .event_note
+
+                                                  : item['type'] ==
+                                                          'done_task'
+
+                                                      ? Icons
+                                                          .check_circle
+
+                                                      : Icons
+                                                          .delete,
+
+                                          size: 22,
+
+                                          color:
+
+                                              item['type'] ==
+                                                      'note'
+
+                                                  ? Colors.blue
+
+                                                  : item['type'] ==
+                                                          'task'
+
+                                                      ? Colors
+                                                          .deepPurple
+
+                                                      : item['type'] ==
+                                                              'done_task'
+
+                                                          ? Colors
+                                                              .green
+
+                                                          : Colors
+                                                              .red,
+                                        ),
+
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+
+                                        Expanded(
+                                          child: Text(
+                                            item['title'] ??
+                                                '',
+
+                                            style:
+                                                const TextStyle(
+                                              fontSize:
+                                                  16,
+
+                                              fontWeight:
+                                                  FontWeight
+                                                      .bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+
+                                    Text(
+                                      item['description'] ??
+                                          '',
+
+                                      style:
+                                          TextStyle(
+                                        color: Colors
+                                            .grey
+                                            .shade700,
+
+                                        height: 1.5,
+                                      ),
+                                    ),
+
+                                    const SizedBox(
+                                      height: 12,
+                                    ),
+
+                                    Text(
+                                      item['created_at']
+                                          .toString()
+                                          .substring(
+                                            0,
+                                            16,
+                                          ),
+
+                                      style:
+                                          TextStyle(
+                                        color: Colors
+                                            .grey
+                                            .shade500,
+
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
-                        ],
-                      ),
-
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment
-                                .start,
-
-                        children: [
-
-                          Text(
-                            note['title'] ?? '',
-
-                            style:
-                                const TextStyle(
-                              fontSize: 18,
-
-                              fontWeight:
-                                  FontWeight.bold,
-                            ),
-                          ),
-
-                          const SizedBox(
-                            height: 10,
-                          ),
-
-                          Text(
-                            note['content'] ?? '',
-
-                            style: TextStyle(
-                              color: Colors
-                                  .grey
-                                  .shade700,
-
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }

@@ -16,14 +16,16 @@ class _HomePageState extends State<HomePage> {
   DateTime focusedDay = DateTime.now();
 
   List<Map<String, dynamic>> allTasks = [];
+  List<Map<String, dynamic>> allNotes = [];
 
   @override
   void initState() {
     super.initState();
     loadTasks();
+    loadNotes();
   }
 
-  /// LOAD TASK
+  /// LOAD TASKS
   Future<void> loadTasks() async {
     final user = supabase.auth.currentUser;
 
@@ -37,6 +39,21 @@ class _HomePageState extends State<HomePage> {
 
     setState(() {
       allTasks = List<Map<String, dynamic>>.from(data);
+    });
+  }
+
+  /// LOAD NOTES
+  Future<void> loadNotes() async {
+    final data = await supabase
+        .from('notes')
+        .select()
+        .order(
+          'created_at',
+          ascending: false,
+        );
+
+    setState(() {
+      allNotes = List<Map<String, dynamic>>.from(data);
     });
   }
 
@@ -63,6 +80,26 @@ class _HomePageState extends State<HomePage> {
     return "Selamat malam";
   }
 
+    String get dayLabel {
+    final now = DateTime.now();
+
+    final today = DateTime(now.year, now.month, now.day);
+    final selected = DateTime(
+      selectedDay.year,
+      selectedDay.month,
+      selectedDay.day,
+    );
+
+    final diff = selected.difference(today).inDays;
+
+    if (diff == 0) return "Hari Ini";
+    if (diff == 1) return "Besok";
+    if (diff == -1) return "Kemarin";
+
+    // hari yang lebih jauh
+    return "${selectedDay.day}/${selectedDay.month}/${selectedDay.year}";
+  }
+
   /// FILTER TASK
   List<Map<String, dynamic>> get todayTasks {
     return allTasks.where((task) {
@@ -80,69 +117,126 @@ class _HomePageState extends State<HomePage> {
     }).toList();
   }
 
+  /// TODAY NOTES
+  List<Map<String, dynamic>> get todayNotes {
+    return allNotes.where((note) {
+      final rawDate =
+          note['created_at']?.toString();
+
+      if (rawDate == null) return false;
+
+      final d = DateTime.tryParse(rawDate);
+
+      if (d == null) return false;
+
+      return d.year == selectedDay.year &&
+          d.month == selectedDay.month &&
+          d.day == selectedDay.day;
+    }).toList();
+  }
+
   /// ADD TASK
   void _addTask() {
-    final titleController = TextEditingController();
-    final descController = TextEditingController();
+    final titleController =
+        TextEditingController();
+
+    final descController =
+        TextEditingController();
 
     TimeOfDay? selectedTime;
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setStateDialog) => AlertDialog(
+        builder:
+            (ctx, setStateDialog) =>
+                AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius:
+                BorderRadius.circular(24),
           ),
 
-          title: const Text("Tambah Tugas"),
+          title: const Text(
+            "Tambah Agenda",
+          ),
 
           content: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize:
+                MainAxisSize.min,
+
             children: [
               TextField(
-                controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: "Nama Acara",
+                controller:
+                    titleController,
+
+                decoration:
+                    const InputDecoration(
+                  labelText:
+                      "Nama Agenda",
                 ),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(
+                height: 10,
+              ),
 
               TextField(
-                controller: descController,
-                decoration: const InputDecoration(
-                  labelText: "Deskripsi",
+                controller:
+                    descController,
+
+                decoration:
+                    const InputDecoration(
+                  labelText:
+                      "Deskripsi",
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(
+                height: 20,
+              ),
 
               Row(
                 children: [
                   Text(
-                    selectedTime == null
+                    selectedTime ==
+                            null
                         ? "Pilih Jam"
-                        : selectedTime!.format(context),
+                        : selectedTime!
+                            .format(
+                            context,
+                          ),
                   ),
 
                   const Spacer(),
 
                   TextButton(
-                    onPressed: () async {
-                      final time = await showTimePicker(
-                        context: context,
-                        initialTime: TimeOfDay.now(),
+                    onPressed:
+                        () async {
+                      final time =
+                          await showTimePicker(
+                        context:
+                            context,
+
+                        initialTime:
+                            TimeOfDay
+                                .now(),
                       );
 
-                      if (time != null) {
-                        setStateDialog(() {
-                          selectedTime = time;
-                        });
+                      if (time !=
+                          null) {
+                        setStateDialog(
+                          () {
+                            selectedTime =
+                                time;
+                          },
+                        );
                       }
                     },
 
-                    child: const Text("Set"),
+                    child:
+                        const Text(
+                      "Set",
+                    ),
                   )
                 ],
               )
@@ -151,37 +245,91 @@ class _HomePageState extends State<HomePage> {
 
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text("Batal"),
+              onPressed: () =>
+                  Navigator.pop(
+                ctx,
+              ),
+
+              child: const Text(
+                "Batal",
+              ),
             ),
 
             ElevatedButton(
               onPressed: () async {
-                if (titleController.text.trim().isEmpty) {
+                if (titleController
+                    .text
+                    .trim()
+                    .isEmpty) {
                   return;
                 }
 
-                final user = supabase.auth.currentUser;
+                final user =
+                    supabase
+                        .auth
+                        .currentUser;
 
-                await supabase.from('task').insert({
-                  'user_id': user!.id,
-                  'title': titleController.text.trim(),
-                  'description': descController.text.trim(),
-                  'is_done': false,
+                await supabase
+                    .from('task')
+                    .insert({
+                  'user_id':
+                      user!.id,
+
+                  'title':
+                      titleController
+                          .text
+                          .trim(),
+
+                  'description':
+                      descController
+                          .text
+                          .trim(),
+
+                  'is_done':
+                      false,
+
                   'date': DateTime(
                     selectedDay.year,
                     selectedDay.month,
                     selectedDay.day,
                   ).toIso8601String(),
-                  'time': selectedTime?.format(context),
+
+                  'time':
+                      selectedTime
+                          ?.format(
+                    context,
+                  ),
+                });
+
+                /// HISTORY
+                await supabase
+                    .from('history')
+                    .insert({
+                  'user_id':
+                      user.id,
+
+                  'title':
+                      titleController
+                          .text
+                          .trim(),
+
+                  'description':
+                      'Agenda baru ditambahkan',
+
+                  'type':
+                      'note',
                 });
 
                 await loadTasks();
 
-                Navigator.pop(ctx);
+                Navigator.pop(
+                  ctx,
+                );
               },
 
-              child: const Text("Simpan"),
+              child: const Text(
+                "Simpan",
+              ),
             )
           ],
         ),
@@ -196,19 +344,24 @@ class _HomePageState extends State<HomePage> {
 
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius:
+              BorderRadius.circular(24),
         ),
 
         title: const Text("Hapus"),
 
         content: const Text(
-          "Yakin mau hapus tugas ini?",
+          "Yakin mau hapus agenda ini?",
         ),
 
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Batal"),
+            onPressed: () =>
+                Navigator.pop(ctx),
+
+            child: const Text(
+              "Batal",
+            ),
           ),
 
           ElevatedButton(
@@ -223,7 +376,9 @@ class _HomePageState extends State<HomePage> {
               Navigator.pop(ctx);
             },
 
-            child: const Text("Hapus"),
+            child: const Text(
+              "Hapus",
+            ),
           )
         ],
       ),
@@ -232,130 +387,261 @@ class _HomePageState extends State<HomePage> {
 
   /// TASK CARD
   Widget _taskCard(Map task) {
-    final isDone = task['is_done'] ?? false;
+    final isDone =
+        task['is_done'] ?? false;
 
-    return GestureDetector(
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.all(16),
+    return Container(
+      margin:
+          const EdgeInsets.only(
+        bottom: 14,
+      ),
 
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(18),
+      padding:
+          const EdgeInsets.all(16),
 
-          border: Border(
-            left: BorderSide(
-              color: isDone
-                  ? Colors.green
-                  : Colors.deepPurple,
-              width: 5,
-            ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+
+        borderRadius:
+            BorderRadius.circular(20),
+
+        border: Border(
+          left: BorderSide(
+            color: isDone
+                ? Colors.green
+                : Colors.deepPurple,
+
+            width: 5,
           ),
-
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 10,
-              color: Colors.black.withOpacity(0.05),
-              offset: const Offset(0, 4),
-            )
-          ],
         ),
 
-        child: Row(
-          children: [
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 10,
 
-            Checkbox(
-              value: isDone,
+            color: Colors.black
+                .withOpacity(0.05),
 
-              activeColor: Colors.deepPurple,
-
-              onChanged: (val) async {
-                await supabase
-                    .from('task')
-                    .update({
-                      'is_done': val ?? false,
-                    })
-                    .eq('id', task['id']);
-
-                await loadTasks();
-              },
+            offset: const Offset(
+              0,
+              4,
             ),
+          )
+        ],
+      ),
 
-            const SizedBox(width: 8),
+      child: Row(
+        children: [
+          Checkbox(
+            value: isDone,
 
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+            activeColor:
+                Colors.deepPurple,
 
-                children: [
+            onChanged: (val) async {
+              await supabase
+                  .from('task')
+                  .update({
+                    'is_done':
+                        val ?? false,
+                  })
+                  .eq(
+                    'id',
+                    task['id'],
+                  );
 
+              if (val == true) {
+                await supabase
+                    .from('history')
+                    .insert({
+                  'user_id': supabase
+                      .auth
+                      .currentUser!
+                      .id,
+
+                  'title':
+                      task['title'],
+
+                  'description':
+                      'Agenda selesai',
+
+                  'type':
+                      'done_task',
+                });
+              }
+
+              await loadTasks();
+            },
+          ),
+
+          const SizedBox(width: 8),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
+
+              children: [
+                Text(
+                  task['title'],
+
+                  style: TextStyle(
+                    fontWeight:
+                        FontWeight.bold,
+
+                    fontSize: 16,
+
+                    decoration: isDone
+                        ? TextDecoration
+                            .lineThrough
+                        : null,
+                  ),
+                ),
+
+                const SizedBox(
+                  height: 6,
+                ),
+
+                if (task['description'] !=
+                        null &&
+                    task['description'] !=
+                        '')
                   Text(
-                    task['title'],
+                    task['description'],
 
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      color:
+                          Colors.grey[600],
 
                       decoration: isDone
-                          ? TextDecoration.lineThrough
+                          ? TextDecoration
+                              .lineThrough
                           : null,
                     ),
                   ),
 
-                  const SizedBox(height: 6),
+                const SizedBox(
+                  height: 10,
+                ),
 
-                  if (task['description'] != null &&
-                      task['description'] != '')
-                    Text(
-                      task['description'],
-
-                      style: TextStyle(
-                        color: Colors.grey[600],
-
-                        decoration: isDone
-                            ? TextDecoration.lineThrough
-                            : null,
+                if (task['time'] != null)
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.access_time,
+                        size: 16,
+                        color:
+                            Colors.deepPurple,
                       ),
-                    ),
 
-                  const SizedBox(height: 10),
+                      const SizedBox(
+                        width: 5,
+                      ),
 
-                  if (task['time'] != null)
-                    Row(
-                      children: [
+                      Text(
+                        task['time'],
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
 
-                        const Icon(
-                          Icons.access_time,
-                          size: 16,
-                          color: Colors.deepPurple,
-                        ),
-
-                        const SizedBox(width: 5),
-
-                        Text(
-                          task['time'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
+          IconButton(
+            icon: const Icon(
+              Icons.delete_outline,
+              color: Colors.red,
             ),
 
-            IconButton(
-              icon: const Icon(
-                Icons.delete_outline,
-                color: Colors.red,
+            onPressed: () =>
+                _deleteTask(
+              task['id'],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  /// NOTE CARD
+  Widget _noteCard(Map note) {
+    return Container(
+      margin:
+          const EdgeInsets.only(
+        bottom: 14,
+      ),
+
+      padding:
+          const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+        color: Colors.white,
+
+        borderRadius:
+            BorderRadius.circular(20),
+
+        border: const Border(
+          left: BorderSide(
+            color: Colors.orange,
+            width: 5,
+          ),
+        ),
+
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 10,
+
+            color: Colors.black
+                .withOpacity(0.05),
+          )
+        ],
+      ),
+
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.sticky_note_2,
+                color: Colors.orange,
               ),
 
-              onPressed: () =>
-                  _deleteTask(task['id']),
-            )
-          ],
-        ),
+              const SizedBox(width: 10),
+
+              Expanded(
+                child: Text(
+                  note['title'] ?? '',
+
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight:
+                        FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          Text(
+            note['content'] ?? '',
+
+            maxLines: 2,
+
+            overflow:
+                TextOverflow.ellipsis,
+
+            style: TextStyle(
+              color: Colors.grey[700],
+              height: 1.5,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -363,37 +649,44 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final tasks = todayTasks;
+    final notes = todayNotes;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F4FB),
+      backgroundColor:
+          const Color(0xFFF7F4FB),
 
       floatingActionButton:
           FloatingActionButton.extended(
         onPressed: _addTask,
 
-        backgroundColor: Colors.deepPurple,
+        backgroundColor:
+            Colors.deepPurple,
 
         icon: const Icon(Icons.add),
-        label: const Text("Tambah"),
+
+        label: const Text(
+          "Tambah",
+        ),
       ),
 
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding:
+              const EdgeInsets.all(16),
 
           child: Column(
             crossAxisAlignment:
                 CrossAxisAlignment.start,
 
             children: [
-
               /// GREETING
               Text(
                 "$greeting, $userName 👋",
 
                 style: const TextStyle(
                   fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontWeight:
+                      FontWeight.bold,
                 ),
               ),
 
@@ -412,122 +705,82 @@ class _HomePageState extends State<HomePage> {
 
               /// CALENDAR
               Container(
-                padding: const EdgeInsets.all(12),
+                padding:
+                    const EdgeInsets.all(12),
 
                 decoration: BoxDecoration(
                   color: Colors.white,
+
                   borderRadius:
-                      BorderRadius.circular(22),
+                      BorderRadius.circular(
+                    22,
+                  ),
 
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 12,
-                      color:
-                          Colors.black.withOpacity(0.04),
+
+                      color: Colors.black
+                          .withOpacity(
+                        0.04,
+                      ),
                     )
                   ],
                 ),
 
                 child: TableCalendar(
                   focusedDay: focusedDay,
-                  firstDay: DateTime(2020),
-                  lastDay: DateTime(2030),
+
+                  firstDay:
+                      DateTime(2020),
+
+                  lastDay:
+                      DateTime(2030),
 
                   calendarFormat:
                       CalendarFormat.week,
 
-                  selectedDayPredicate: (day) =>
-                      isSameDay(day, selectedDay),
+                  selectedDayPredicate:
+                      (day) => isSameDay(
+                            day,
+                            selectedDay,
+                          ),
 
-                  eventLoader: (day) {
-                    return allTasks.where((task) {
-                      final rawDate = task['date'];
-
-                      if (rawDate == null) {
-                        return false;
-                      }
-
-                      final d =
-                          DateTime.tryParse(rawDate);
-
-                      if (d == null) {
-                        return false;
-                      }
-
-                      return isSameDay(d, day);
-                    }).toList();
-                  },
-
-                  onDaySelected: (day, focus) {
+                  onDaySelected:
+                      (day, focus) {
                     setState(() {
                       selectedDay = day;
                       focusedDay = focus;
                     });
                   },
 
-                  headerStyle: const HeaderStyle(
-                    formatButtonVisible: false,
+                  headerStyle:
+                      const HeaderStyle(
+                    formatButtonVisible:
+                        false,
+
                     titleCentered: true,
-
-                    leftChevronIcon: Icon(
-                      Icons.chevron_left,
-                    ),
-
-                    rightChevronIcon: Icon(
-                      Icons.chevron_right,
-                    ),
-
-                    titleTextStyle: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
                   ),
 
-                  calendarStyle: CalendarStyle(
-                    outsideDaysVisible: false,
+                  calendarStyle:
+                      CalendarStyle(
+                    todayDecoration:
+                        BoxDecoration(
+                      color: Colors
+                          .deepPurple
+                          .shade200,
 
-                    todayDecoration: BoxDecoration(
-                      color:
-                          Colors.deepPurple.shade200,
-                      shape: BoxShape.circle,
+                      shape:
+                          BoxShape.circle,
                     ),
 
                     selectedDecoration:
                         const BoxDecoration(
-                      color: Colors.deepPurple,
-                      shape: BoxShape.circle,
-                    ),
+                      color:
+                          Colors.deepPurple,
 
-                    markerDecoration:
-                        const BoxDecoration(
-                      color: Colors.orange,
-                      shape: BoxShape.circle,
-                    ),
-
-                    todayTextStyle:
-                        const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-
-                    selectedTextStyle:
-                        const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  daysOfWeekStyle:
-                      DaysOfWeekStyle(
-                    weekdayStyle: TextStyle(
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-
-                    weekendStyle:
-                        const TextStyle(
-                      color: Colors.redAccent,
-                      fontWeight: FontWeight.w500,
+                      shape:
+                          BoxShape.circle,
                     ),
                   ),
                 ),
@@ -535,87 +788,167 @@ class _HomePageState extends State<HomePage> {
 
               const SizedBox(height: 20),
 
-              /// TASK TITLE
-              Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
-
-                children: [
-                  const Text(
-                    "Agenda Hari Ini",
-
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  Text(
-                    "${tasks.length} tugas",
-
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              /// TASK LIST
               Expanded(
-                child: tasks.isEmpty
-                    ? Center(
+                child: ListView(
+                  children: [
+                    /// AGENDA
+                    Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .spaceBetween,
+
+                      children: [
+                        Text(
+                           "Agenda $dayLabel",
+
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        Text(
+                          "${tasks.length} agenda",
+
+                          style: TextStyle(
+                            color:
+                                Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(
+                      height: 16,
+                    ),
+
+                    if (tasks.isEmpty)
+                      Container(
+                        padding:
+                            const EdgeInsets
+                                .all(20),
+
+                        decoration:
+                            BoxDecoration(
+                          color: Colors.white,
+
+                          borderRadius:
+                              BorderRadius
+                                  .circular(
+                            20,
+                          ),
+                        ),
+
                         child: Column(
-                          mainAxisAlignment:
-                              MainAxisAlignment.center,
-
                           children: [
-
                             Icon(
                               Icons.event_note,
-                              size: 80,
-                              color:
-                                  Colors.grey[400],
+                              size: 60,
+                              color: Colors
+                                  .grey[400],
                             ),
 
-                            const SizedBox(height: 14),
+                            const SizedBox(
+                              height: 10,
+                            ),
 
                             const Text(
-                              "Belum ada tugas",
-
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight:
-                                    FontWeight.bold,
-                              ),
-                            ),
-
-                            const SizedBox(height: 6),
-
-                            Text(
-                              "Yuk mulai rencanakan harimu ✨",
-
-                              style: TextStyle(
-                                color:
-                                    Colors.grey[600],
-                              ),
+                              "Belum ada agenda",
                             ),
                           ],
                         ),
-                      )
-
-                    : ListView.builder(
-                        itemCount: tasks.length,
-
-                        itemBuilder:
-                            (context, index) {
-                          return _taskCard(
-                            tasks[index],
-                          );
-                        },
                       ),
-              )
+
+                    if (tasks.isNotEmpty)
+                      ...tasks.map(
+                        (task) =>
+                            _taskCard(task),
+                      ),
+
+                    const SizedBox(
+                      height: 24,
+                    ),
+
+                    /// NOTES
+                    Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .spaceBetween,
+
+                      children: [
+                        Text(
+                           "Catatan $dayLabel",
+                           
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        Text(
+                          "${notes.length} catatan",
+
+                          style: TextStyle(
+                            color:
+                                Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(
+                      height: 16,
+                    ),
+
+                    if (notes.isEmpty)
+                      Container(
+                        padding:
+                            const EdgeInsets
+                                .all(20),
+
+                        decoration:
+                            BoxDecoration(
+                          color: Colors.white,
+
+                          borderRadius:
+                              BorderRadius
+                                  .circular(
+                            20,
+                          ),
+                        ),
+
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.note_alt,
+                              size: 60,
+                              color: Colors
+                                  .grey[400],
+                            ),
+
+                            const SizedBox(
+                              height: 10,
+                            ),
+
+                            const Text(
+                              "Belum ada catatan",
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    if (notes.isNotEmpty)
+                      ...notes.map(
+                        (note) =>
+                            _noteCard(note),
+                      ),
+
+                    const SizedBox(
+                      height: 100,
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
