@@ -117,6 +117,22 @@ class _HomePageState extends State<HomePage> {
     }).toList();
   }
 
+  List<dynamic> getEventsForDay(DateTime day) {
+  return allTasks.where((task) {
+    final rawDate = task['date'];
+
+    if (rawDate == null) return false;
+
+    final d = DateTime.tryParse(rawDate);
+
+    if (d == null) return false;
+
+    return d.year == day.year &&
+        d.month == day.month &&
+        d.day == day.day;
+  }).toList();
+}
+
   /// TODAY NOTES
   List<Map<String, dynamic>> get todayNotes {
     return allNotes.where((note) {
@@ -338,7 +354,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// DELETE TASK
-  void _deleteTask(String id) {
+  void _deleteTask(String id, String title) {
     showDialog(
       context: context,
 
@@ -366,6 +382,16 @@ class _HomePageState extends State<HomePage> {
 
           ElevatedButton(
             onPressed: () async {
+              
+              await supabase
+                  .from('history')
+                  .insert({
+                'user_id': supabase.auth.currentUser!.id,
+                'title': title,
+                'description': 'Agenda dihapus',
+                'type': 'deleted_task',
+              });
+              
               await supabase
                   .from('task')
                   .delete()
@@ -438,40 +464,44 @@ class _HomePageState extends State<HomePage> {
             activeColor:
                 Colors.deepPurple,
 
-            onChanged: (val) async {
+           onChanged: (val) async {
               await supabase
                   .from('task')
                   .update({
-                    'is_done':
-                        val ?? false,
+                    'is_done': val ?? false,
                   })
-                  .eq(
-                    'id',
-                    task['id'],
-                  );
+                  .eq('id', task['id']);
 
               if (val == true) {
+
+                final existing = await supabase
+                    .from('history')
+                    .select()
+                    .eq('title', task['title'])
+                    .eq('type', 'done_task');
+
+                if (existing.isEmpty) {
+                  await supabase
+                      .from('history')
+                      .insert({
+                    'user_id': supabase.auth.currentUser!.id,
+                    'title': task['title'],
+                    'description': 'Agenda selesai',
+                    'type': 'done_task',
+                  });
+                }
+
+              } else {
+
                 await supabase
                     .from('history')
-                    .insert({
-                  'user_id': supabase
-                      .auth
-                      .currentUser!
-                      .id,
-
-                  'title':
-                      task['title'],
-
-                  'description':
-                      'Agenda selesai',
-
-                  'type':
-                      'done_task',
-                });
+                    .delete()
+                    .eq('title', task['title'])
+                    .eq('type', 'done_task');
               }
 
               await loadTasks();
-            },
+            }
           ),
 
           const SizedBox(width: 8),
@@ -557,6 +587,7 @@ class _HomePageState extends State<HomePage> {
             onPressed: () =>
                 _deleteTask(
               task['id'],
+              task['title'],
             ),
           )
         ],
@@ -730,15 +761,12 @@ class _HomePageState extends State<HomePage> {
 
                 child: TableCalendar(
                   focusedDay: focusedDay,
+                  firstDay: DateTime(2020),
+                  lastDay: DateTime(2030),
 
-                  firstDay:
-                      DateTime(2020),
+                  eventLoader: getEventsForDay,
 
-                  lastDay:
-                      DateTime(2030),
-
-                  calendarFormat:
-                      CalendarFormat.week,
+                  calendarFormat: CalendarFormat.week,
 
                   selectedDayPredicate:
                       (day) => isSameDay(
@@ -762,10 +790,8 @@ class _HomePageState extends State<HomePage> {
                     titleCentered: true,
                   ),
 
-                  calendarStyle:
-                      CalendarStyle(
-                    todayDecoration:
-                        BoxDecoration(
+                  calendarStyle: CalendarStyle(
+                    todayDecoration: BoxDecoration(
                       color: Colors
                           .deepPurple
                           .shade200,
@@ -782,6 +808,24 @@ class _HomePageState extends State<HomePage> {
                       shape:
                           BoxShape.circle,
                     ),
+                  ),
+
+                  calendarBuilders: CalendarBuilders(
+                    markerBuilder: (context, day, events) {
+                      if (events.isEmpty) return null;
+
+                      return Positioned(
+                        bottom: 4,
+                        child: Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Colors.deepPurple,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -818,9 +862,7 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
 
-                    const SizedBox(
-                      height: 16,
-                    ),
+                    const SizedBox( height: 16),
 
                     if (tasks.isEmpty)
                       Container(
@@ -911,10 +953,7 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.white,
 
                           borderRadius:
-                              BorderRadius
-                                  .circular(
-                            20,
-                          ),
+                              BorderRadius.circular(20),
                         ),
 
                         child: Column(
@@ -922,8 +961,7 @@ class _HomePageState extends State<HomePage> {
                             Icon(
                               Icons.note_alt,
                               size: 60,
-                              color: Colors
-                                  .grey[400],
+                              color: Colors.grey[400],
                             ),
 
                             const SizedBox(
