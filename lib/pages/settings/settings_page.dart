@@ -220,7 +220,7 @@ class _SettingsPageState
                   onPressed: () {},
 
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                    backgroundColor: const Color.fromARGB(255, 145, 37, 196),
 
                     shape: RoundedRectangleBorder(
                       borderRadius:

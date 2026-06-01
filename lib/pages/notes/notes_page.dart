@@ -183,7 +183,7 @@ class _NotesPageState
             const EdgeInsets.all(18),
 
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
 
           borderRadius:
               BorderRadius.circular(
@@ -329,9 +329,7 @@ class _NotesPageState
 
     return Scaffold(
       backgroundColor:
-          const Color(
-        0xFFF7F4FB,
-      ),
+        Theme.of(context).scaffoldBackgroundColor,
 
       body: SafeArea(
 
@@ -347,20 +345,6 @@ class _NotesPageState
 
                   const SizedBox(
                     height: 24,
-                  ),
-
-                  /// TITLE
-                  const Center(
-                    child: Text(
-                      "Catatan",
-
-                      style: TextStyle(
-                        fontSize: 30,
-
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
-                    ),
                   ),
 
                   const SizedBox(
@@ -386,8 +370,7 @@ class _NotesPageState
                             decoration:
                                 BoxDecoration(
                               color:
-                                  Colors
-                                      .white,
+                                Theme.of(context).cardColor,
 
                               borderRadius:
                                   BorderRadius.circular(
@@ -435,7 +418,7 @@ class _NotesPageState
                           decoration:
                               BoxDecoration(
                             color:
-                                Colors.white,
+                              Theme.of(context).cardColor,
 
                             borderRadius:
                                 BorderRadius.circular(
@@ -450,7 +433,7 @@ class _NotesPageState
                             icon: const Icon(
                               Icons.tune,
                               color:
-                                  Colors.black,
+                                  Color.fromARGB(255, 200, 64, 218),
                             ),
 
                             onSelected:
@@ -647,9 +630,9 @@ class _NotesPageState
           fetchNotes();
         },
 
-        child: const Icon(
+        child: Icon(
           Icons.add,
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
         ),
       ),
     );

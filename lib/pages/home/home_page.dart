@@ -151,6 +151,22 @@ class _HomePageState extends State<HomePage> {
     }).toList();
   }
 
+        int get totalAgendaHariIni {
+        return todayTasks.length;
+      }
+
+      int get totalSelesaiHariIni {
+        return todayTasks
+            .where((e) => e['is_done'] == true)
+            .length;
+      }
+
+      int get totalBelumSelesai {
+        return todayTasks
+            .where((e) => e['is_done'] != true)
+            .length;
+      }
+
   /// ADD TASK
   void _addTask() {
     final titleController =
@@ -426,7 +442,7 @@ class _HomePageState extends State<HomePage> {
           const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+       color: Theme.of(context).cardColor,
 
         borderRadius:
             BorderRadius.circular(20),
@@ -607,7 +623,7 @@ class _HomePageState extends State<HomePage> {
           const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
 
         borderRadius:
             BorderRadius.circular(20),
@@ -677,14 +693,45 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+      Widget _summaryItem(
+      IconData icon,
+      String value,
+      String label,
+      Color color,
+    ) {
+      return Column(
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: 30,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      );
+    }
+
   @override
   Widget build(BuildContext context) {
     final tasks = todayTasks;
-    final notes = todayNotes;
+    final notes = allNotes.take(3).toList();
 
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF7F4FB),
+    backgroundColor:
+        Theme.of(context).scaffoldBackgroundColor,
 
       floatingActionButton:
           FloatingActionButton.extended(
@@ -736,20 +783,14 @@ class _HomePageState extends State<HomePage> {
 
               /// CALENDAR
               Container(
-                padding:
-                    const EdgeInsets.all(12),
-
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-
-                  borderRadius:
-                      BorderRadius.circular(
-                    22,
-                  ),
+                    color: Theme.of(context).cardColor,                  borderRadius:
+                      BorderRadius.circular(20),
 
                   boxShadow: [
                     BoxShadow(
-                      blurRadius: 12,
+                      blurRadius: 10,
 
                       color: Colors.black
                           .withOpacity(
@@ -840,6 +881,7 @@ class _HomePageState extends State<HomePage> {
                       mainAxisAlignment:
                           MainAxisAlignment
                               .spaceBetween,
+                  
 
                       children: [
                         Text(
@@ -872,8 +914,7 @@ class _HomePageState extends State<HomePage> {
 
                         decoration:
                             BoxDecoration(
-                          color: Colors.white,
-
+                            color: Theme.of(context).cardColor,
                           borderRadius:
                               BorderRadius
                                   .circular(
@@ -919,7 +960,7 @@ class _HomePageState extends State<HomePage> {
 
                       children: [
                         Text(
-                           "Catatan $dayLabel",
+                           "Catatan Terbaru",
                            
                           style: const TextStyle(
                             fontSize: 18,
@@ -928,7 +969,7 @@ class _HomePageState extends State<HomePage> {
                         ),
 
                         Text(
-                          "${notes.length} catatan",
+                          "3 terbaru",
 
                           style: TextStyle(
                             color:
@@ -950,7 +991,7 @@ class _HomePageState extends State<HomePage> {
 
                         decoration:
                             BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
 
                           borderRadius:
                               BorderRadius.circular(20),

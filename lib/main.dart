@@ -58,7 +58,10 @@ class _SoraAppState extends State<SoraApp> {
       theme: ThemeData(
         brightness: Brightness.light,
         primarySwatch: Colors.deepPurple,
-        scaffoldBackgroundColor: Colors.white,
+
+        scaffoldBackgroundColor: const Color(0xFFF7F4FB),
+
+        cardColor: Colors.white,
 
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
@@ -66,11 +69,42 @@ class _SoraAppState extends State<SoraApp> {
           centerTitle: true,
           foregroundColor: Colors.black,
         ),
+
+        bottomNavigationBarTheme:
+            const BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+          selectedItemColor: Colors.deepPurple,
+          unselectedItemColor: Colors.grey,
+        ),
       ),
 
       /// DARK THEME
       darkTheme: ThemeData(
         brightness: Brightness.dark,
+
+        scaffoldBackgroundColor:
+            const Color(0xFF121212),
+
+        cardColor:
+            const Color(0xFF1E1E1E),
+
+        appBarTheme: const AppBarTheme(
+          backgroundColor:
+              Color(0xFF1E1E1E),
+          elevation: 0,
+          centerTitle: true,
+          foregroundColor: Colors.white,
+        ),
+
+        bottomNavigationBarTheme:
+            const BottomNavigationBarThemeData(
+          backgroundColor:
+              Color(0xFF1E1E1E),
+          selectedItemColor:
+              Colors.deepPurple,
+          unselectedItemColor:
+              Colors.grey,
+        ),
       ),
 
       themeMode: _themeMode,
@@ -118,7 +152,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int currentIndex = 0;
-
+  
   @override
   Widget build(BuildContext context) {
     final pages = [
@@ -140,8 +174,15 @@ class _MainPageState extends State<MainPage> {
 
         type: BottomNavigationBarType.fixed,
 
-        selectedItemColor: Colors.deepPurple,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor:
+            Theme.of(context)
+                .bottomNavigationBarTheme
+                .selectedItemColor,
+
+        unselectedItemColor:
+            Theme.of(context)
+                .bottomNavigationBarTheme
+                .unselectedItemColor,
 
         onTap: (index) {
           setState(() {

@@ -112,10 +112,9 @@ class _HistoryPageState
         decoration: BoxDecoration(
           color: isActive
               ? Colors.deepPurple
-              : Colors.white,
+              : Theme.of(context).cardColor,
 
-          borderRadius:
-              BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12),
 
           border: Border.all(
             color: Colors.deepPurple,
@@ -124,16 +123,12 @@ class _HistoryPageState
 
         child: Text(
           label,
-
           style: TextStyle(
             fontSize: 13,
-
             color: isActive
                 ? Colors.white
                 : Colors.deepPurple,
-
-            fontWeight:
-                FontWeight.w600,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -147,7 +142,7 @@ class _HistoryPageState
 
     return Scaffold(
       backgroundColor:
-          const Color(0xfff5f5f5),
+          Theme.of(context).scaffoldBackgroundColor,
 
       body: SafeArea(
         child: isLoading
@@ -165,42 +160,21 @@ class _HistoryPageState
                   ),
 
                   /// FILTER BUTTONS
-                  SizedBox(
-                    height: 42,
-
-                    child: ListView(
-                      scrollDirection:
-                          Axis.horizontal,
-
-                      padding:
-                          const EdgeInsets.symmetric(
-                        horizontal: 16,
-                      ),
-
-                      children: [
-
-                        filterButton(
-                          "Semua",
-                          "all",
-                        ),
-
-                        filterButton(
-                          "Catatan",
-                          "note",
-                        ),
-
-                        filterButton(
-                          "Selesai",
-                          "done_task",
-                        ),
-
-                        filterButton(
-                          "Dihapus",
-                          "deleted_task",
-                        ),
-                      ],
+                 SizedBox(
+                  height: 50,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
                     ),
+                    children: [
+                      Center(child: filterButton("Semua", "all")),
+                      Center(child: filterButton("Catatan", "note")),
+                      Center(child: filterButton("Selesai", "done_task")),
+                      Center(child: filterButton("Dihapus", "deleted_task")),
+                    ],
                   ),
+                ),
 
                   const SizedBox(
                     height: 10,
@@ -248,7 +222,7 @@ class _HistoryPageState
                                 decoration:
                                     BoxDecoration(
                                   color:
-                                      Colors.white,
+                                    Theme.of(context).cardColor,
 
                                   borderRadius:
                                       BorderRadius
