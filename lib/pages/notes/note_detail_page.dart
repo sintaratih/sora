@@ -13,13 +13,18 @@ class NoteDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    final isDark =
+    Theme.of(context).brightness ==
+    Brightness.dark;
     return Scaffold(
-      backgroundColor:
-          const Color(0xfff5f5f5),
+      backgroundColor: isDark
+        ? const Color(0xFF121212)
+        : const Color(0xFFF5F5F5),
 
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark
+            ? const Color(0xFF1E1E1E)
+            : Colors.white,
         elevation: 0,
 
         leading: IconButton(
@@ -27,23 +32,13 @@ class NoteDetailPage extends StatelessWidget {
             Navigator.pop(context);
           },
 
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back,
-            color: Colors.black,
+            color: isDark
+                  ? Colors.white
+                  : Colors.black,
           ),
         ),
-
-        actions: [
-
-          IconButton(
-            onPressed: () {},
-
-            icon: const Icon(
-              Icons.more_horiz,
-              color: Colors.black,
-            ),
-          ),
-        ],
       ),
 
       body: Padding(
@@ -55,49 +50,16 @@ class NoteDetailPage extends StatelessWidget {
               CrossAxisAlignment.start,
 
           children: [
-
-            /// CATEGORY
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 8,
-              ),
-
-              decoration:
-                  BoxDecoration(
-                color: Colors.deepPurple
-                    .withOpacity(0.1),
-
-                borderRadius:
-                    BorderRadius.circular(
-                  30,
-                ),
-              ),
-
-              child: const Text(
-                "Ide",
-
-                style: TextStyle(
-                  color:
-                      Colors.deepPurple,
-
-                  fontWeight:
-                      FontWeight.bold,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
             /// TITLE
             Text(
               note['title'] ?? '',
 
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 28,
-                fontWeight:
-                    FontWeight.bold,
+                fontWeight: FontWeight.bold,
+                color: isDark
+                    ? Colors.white
+                    : Colors.black,
               ),
             ),
 
@@ -120,13 +82,11 @@ class NoteDetailPage extends StatelessWidget {
             /// CONTENT
             Text(
               note['content'] ?? '',
-
               style: TextStyle(
                 fontSize: 16,
-
-                color:
-                    Colors.grey.shade800,
-
+                color: isDark
+                    ? Colors.white
+                    : Colors.black,
                 height: 1.7,
               ),
             ),
@@ -143,8 +103,9 @@ class NoteDetailPage extends StatelessWidget {
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(
-                    color:
-                        Colors.grey.shade200,
+                   color: isDark
+                      ? Colors.white12
+                      : Colors.grey.shade200,
                   ),
                 ),
               ),
@@ -180,23 +141,19 @@ class NoteDetailPage extends StatelessWidget {
 
                         Icon(
                           Icons.edit_outlined,
-
-                          color: Colors
-                              .grey
-                              .shade700,
+                          color: isDark
+                        ? Colors.white70
+                        : Colors.grey.shade700,
                         ),
 
-                        const SizedBox(
-                          height: 6,
-                        ),
+                        const SizedBox(height: 6,),
 
                         Text(
                           "Edit",
-
                           style: TextStyle(
-                            color: Colors
-                                .grey
-                                .shade700,
+                             color: isDark
+                                    ? Colors.white70
+                                    : Colors.grey.shade700,
                           ),
                         ),
                       ],

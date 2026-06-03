@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../auth/login_page.dart';
 import 'about_page.dart';
+import 'help_center_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final bool isDark;
@@ -21,61 +22,13 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState
     extends State<SettingsPage> {
   late bool isDarkMode;
+  bool notificationsEnabled = true;
 
   @override
   void initState() {
     super.initState();
     isDarkMode = widget.isDark;
   }
-        Future<void> editName() async {
-      final user =
-          Supabase.instance.client.auth.currentUser;
-
-      if (user == null) return;
-
-      final controller = TextEditingController(
-        text: user.userMetadata?['name'] ?? '',
-      );
-
-      await showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Edit Nama"),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              hintText: "Masukkan nama baru",
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Batal"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await Supabase.instance.client.auth
-                    .updateUser(
-                  UserAttributes(
-                    data: {
-                      'name':
-                          controller.text.trim(),
-                    },
-                  ),
-                );
-
-                if (!mounted) return;
-
-                Navigator.pop(context);
-
-                setState(() {});
-              },
-              child: const Text("Simpan"),
-            ),
-          ],
-        ),
-      );
-    }
   
 
   @override
@@ -103,36 +56,6 @@ class _SettingsPageState
         child: SingleChildScrollView(
           child: Column(
             children: [
-              /// HEADER UNGU
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(
-                  20,
-                  25,
-                  20,
-                  40,
-                ),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF8E24AA),
-                  borderRadius:
-                      BorderRadius.only(
-                        bottomLeft:
-                            Radius.circular(30),
-                        bottomRight:
-                            Radius.circular(35),
-                      ),
-                ),
-                child: const Text(
-                  "Settings",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 30,
-                    fontWeight:
-                        FontWeight.bold,
-                  ),
-                ),
-              ),
-
               Padding(
                 padding:
                     const EdgeInsets.all(20),
@@ -143,10 +66,7 @@ class _SettingsPageState
 
                   children: [
                     /// PROFILE
-                InkWell(
-                  onTap: editName,
-                  borderRadius: BorderRadius.circular(24),
-                  child: Container(
+                  Container(
                     padding: const EdgeInsets.all(20),
 
                     decoration: BoxDecoration(
@@ -210,17 +130,9 @@ class _SettingsPageState
                             ],
                           ),
                         ),
-
-                        Icon(
-                          Icons.chevron_right,
-                          color: isDark
-                              ? Colors.white70
-                              : Colors.black54,
-                        ),
                       ],
                     ),
                   ),
-                ),
 
                     const SizedBox(
                       height: 30,
@@ -282,41 +194,16 @@ class _SettingsPageState
 
                         _menuTile(
                           isDark,
-                          icon:
-                              Icons.notifications,
-                          title:
-                              "Notifications",
-
-                          trailing: Icon(
-                            Icons
-                                .chevron_right,
-                            color:
-                                isDark
-                                    ? Colors
-                                        .white70
-                                    : Colors
-                                        .black54,
-                          ),
-                        ),
-
-                        _divider(isDark),
-
-                        _menuTile(
-                          isDark,
-                          icon:
-                              Icons.calendar_today,
-                          title:
-                              "Calendar",
-
-                          trailing: Icon(
-                            Icons
-                                .chevron_right,
-                            color:
-                                isDark
-                                    ? Colors
-                                        .white70
-                                    : Colors
-                                        .black54,
+                          icon: Icons.notifications,
+                          title: "Notifications",
+                          trailing: Switch(
+                            value: notificationsEnabled,
+                            activeColor: Colors.deepPurple,
+                            onChanged: (value) {
+                              setState(() {
+                                notificationsEnabled = value;
+                              });
+                            },
                           ),
                         ),
                       ],
@@ -347,26 +234,29 @@ class _SettingsPageState
                     _menuCard(
                       isDark,
                       [
-                        _menuTile(
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HelpCenterPage(),
+                            ),
+                          );
+                        },
+                        child: _menuTile(
                           isDark,
-                          icon:
-                              Icons.help_outline,
-                          title:
-                              "Help Center",
-
+                          icon: Icons.help_outline,
+                          title: "Help Center",
                           trailing: Icon(
-                            Icons
-                                .chevron_right,
-                            color:
-                                isDark
-                                    ? Colors
-                                        .white70
-                                    : Colors
-                                        .black54,
+                            Icons.chevron_right,
+                            color: isDark
+                                ? Colors.white70
+                                : Colors.black54,
                           ),
                         ),
+                      ),
 
-                        _divider(isDark),
+                      _divider(isDark),
 
                       InkWell(
                           onTap: () {
@@ -405,8 +295,47 @@ class _SettingsPageState
 
                       child:
                           ElevatedButton.icon(
-                            onPressed: () {},
+                            onPressed: () async {
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text("Logout"),
+                                    content: const Text(
+                                      "Apakah kamu yakin ingin keluar?",
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context, false);
+                                        },
+                                        child: const Text("Batal"),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context, true);
+                                        },
+                                        child: const Text("Logout"),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
 
+                              if (confirm == true) {
+                                await Supabase.instance.client.auth.signOut();
+
+                                if (!mounted) return;
+
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const LoginPage(),
+                                  ),
+                                  (route) => false,
+                                );
+                              }
+                            },
                             style:
                                 ElevatedButton.styleFrom(
                                   backgroundColor:

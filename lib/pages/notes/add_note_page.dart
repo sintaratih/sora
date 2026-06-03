@@ -230,30 +230,42 @@ class _AddNotePageState
 
   @override
   Widget build(BuildContext context) {
+    final isDark =
+    Theme.of(context).brightness ==
+    Brightness.dark;
 
     return Scaffold(
+      backgroundColor: isDark
+          ? const Color(0xFF121212)
+          : const Color(0xFFF5F5F5),
+
+    appBar: AppBar(
       backgroundColor:
-          const Color(0xfff5f5f5),
+      isDark
+          ? const Color(0xFF1E1E1E)
+          : Colors.white,
 
-      appBar: AppBar(
-        backgroundColor:
-            Colors.white,
+      elevation: 0,
 
-        elevation: 0,
+      iconTheme: IconThemeData(
+        color:
+            isDark
+                ? Colors.white
+                : Colors.black,
+      ),
+      title: Text(
+        isEdit
+            ? "Edit Catatan"
+            : "Tambah Catatan",
 
-        title: Text(
-
-          isEdit
-              ? "Edit Catatan"
-              : "Tambah Catatan",
-
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight:
-                FontWeight.bold,
-          ),
+        style: TextStyle(
+          color: isDark
+          ? Colors.white
+          : Colors.black,
+          fontWeight: FontWeight.bold,
         ),
       ),
+    ),
 
       body: SingleChildScrollView(
         padding:
@@ -266,13 +278,15 @@ class _AddNotePageState
           children: [
 
             /// TITLE
-            const Text(
+            Text(
               "Judul",
-
               style: TextStyle(
                 fontSize: 16,
-                fontWeight:
-                    FontWeight.bold,
+                fontWeight: FontWeight.bold,
+                color:
+                    isDark
+                        ? Colors.white
+                        : Colors.black,
               ),
             ),
 
@@ -281,29 +295,31 @@ class _AddNotePageState
             ),
 
             TextField(
-              controller:
-                  titleController,
+              controller: titleController,
+              style: TextStyle(
+                  color: isDark
+                         ? Colors.white
+                         : Colors.black,
+                ),
+              decoration: InputDecoration(
+                hintText: "Masukkan judul",
 
-              decoration:
-                  InputDecoration(
-
-                hintText:
-                    "Masukkan judul",
+                 hintStyle: TextStyle(
+                  color: isDark
+                          ? Colors.white54
+                          : Colors.grey,
+                ),
 
                 filled: true,
 
-                fillColor:
-                    Colors.white,
+                fillColor: isDark
+                    ? const Color(0xFF1E1E1E)
+                    : Colors.white,
 
-                border:
-                    OutlineInputBorder(
-
+                border: OutlineInputBorder(
                   borderRadius:
-                      BorderRadius
-                          .circular(16),
-
-                  borderSide:
-                      BorderSide.none,
+                      BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
                 ),
               ),
             ),
@@ -313,13 +329,16 @@ class _AddNotePageState
             ),
 
             /// CONTENT
-            const Text(
+            Text(
               "Isi Catatan",
 
               style: TextStyle(
                 fontSize: 16,
-                fontWeight:
-                    FontWeight.bold,
+                fontWeight: FontWeight.bold,
+                color:
+                    isDark
+                        ? Colors.white
+                        : Colors.black,
               ),
             ),
 
@@ -328,31 +347,35 @@ class _AddNotePageState
             ),
 
             TextField(
-              controller:
-                  contentController,
-
+              controller: contentController,
+              style: TextStyle(
+                color:
+                    isDark
+                        ? Colors.white
+                        : Colors.black,
+              ),
               maxLines: 8,
 
-              decoration:
-                  InputDecoration(
+              decoration: InputDecoration(
+                hintText: "Tulis sesuatu...",
 
-                hintText:
-                    "Tulis sesuatu...",
+                hintStyle: TextStyle(
+                  color:
+                      isDark
+                          ? Colors.white54
+                          : Colors.grey,
+                ),
 
                 filled: true,
 
-                fillColor:
-                    Colors.white,
+                fillColor: isDark
+                    ? const Color(0xFF1E1E1E)
+                    : Colors.white,
 
-                border:
-                    OutlineInputBorder(
-
+                border: OutlineInputBorder(
                   borderRadius:
-                      BorderRadius
-                          .circular(16),
-
-                  borderSide:
-                      BorderSide.none,
+                      BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
                 ),
               ),
             ),
