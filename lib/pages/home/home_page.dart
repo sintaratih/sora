@@ -44,9 +44,14 @@ class _HomePageState extends State<HomePage> {
 
   /// LOAD NOTES
   Future<void> loadNotes() async {
+    final user = supabase.auth.currentUser;
+
+    if (user == null) return;
+
     final data = await supabase
         .from('notes')
         .select()
+        .eq('user_id', user.id)
         .order(
           'created_at',
           ascending: false,
@@ -733,19 +738,28 @@ class _HomePageState extends State<HomePage> {
     backgroundColor:
         Theme.of(context).scaffoldBackgroundColor,
 
-      floatingActionButton:
-          FloatingActionButton.extended(
-        onPressed: _addTask,
+    floatingActionButton: FloatingActionButton.extended(
+      onPressed: _addTask,
 
-        backgroundColor:
-            Colors.deepPurple,
+      backgroundColor: Colors.deepPurple,
 
-        icon: const Icon(Icons.add),
+      extendedPadding: const EdgeInsets.symmetric(
+        horizontal: 20,
+      ),
 
-        label: const Text(
-          "Tambah",
+      icon: const Icon(
+        Icons.add,
+        color: Colors.white,
+      ),
+
+      label: const Text(
+        "Tambah",
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
         ),
       ),
+    ),
 
       body: SafeArea(
         child: Padding(
@@ -968,14 +982,11 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
 
-                        Text(
-                          "3 terbaru",
-
+                        Text( "${allNotes.length} catatan",
                           style: TextStyle(
-                            color:
-                                Colors.grey[600],
+                            color: Colors.grey[600],
                           ),
-                        ),
+                        )
                       ],
                     ),
 

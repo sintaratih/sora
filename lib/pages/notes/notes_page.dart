@@ -611,28 +611,22 @@ class _NotesPageState
               ),
       ),
 
-      floatingActionButton:
-          FloatingActionButton(
-        backgroundColor:
-            Colors.deepPurple,
-
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.deepPurple,
         onPressed: () async {
-
           await Navigator.push(
             context,
-
             MaterialPageRoute(
-              builder: (_) =>
-                  const AddNotePage(),
+              builder: (_) => const AddNotePage(),
             ),
           );
 
           fetchNotes();
         },
 
-        child: Icon(
+        child: const Icon(
           Icons.add,
-          color: Theme.of(context).cardColor,
+          color: Colors.white,
         ),
       ),
     );

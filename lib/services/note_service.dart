@@ -5,14 +5,17 @@ class NoteService {
 
   /// GET NOTES
   Future<List<Map<String, dynamic>>> getNotes() async {
+    final user = supabase.auth.currentUser;
+
+    if (user == null) return [];
+
     final response = await supabase
         .from('notes')
         .select()
+        .eq('user_id', user.id)
         .order('created_at', ascending: false);
 
-    return List<Map<String, dynamic>>.from(
-      response,
-    );
+    return List<Map<String, dynamic>>.from(response);
   }
 
   /// ADD NOTE
@@ -20,9 +23,14 @@ class NoteService {
     required String title,
     required String content,
   }) async {
+    final user = supabase.auth.currentUser;
+
+    if (user == null) return;
+
     await supabase.from('notes').insert({
       'title': title,
       'content': content,
+      'user_id': user.id,
     });
   }
 
@@ -33,18 +41,19 @@ class NoteService {
         .delete()
         .eq('id', id);
   }
+
   /// UPDATE NOTE
-Future updateNote({
-  required String id,
-  required String title,
-  required String content,
-}) async {
-  await supabase
-      .from('notes')
-      .update({
-        'title': title,
-        'content': content,
-      })
-      .eq('id', id);
-}
+  Future updateNote({
+    required String id,
+    required String title,
+    required String content,
+  }) async {
+    await supabase
+        .from('notes')
+        .update({
+          'title': title,
+          'content': content,
+        })
+        .eq('id', id);
+  }
 }

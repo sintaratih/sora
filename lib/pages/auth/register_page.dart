@@ -59,6 +59,10 @@ class _RegisterPageState
         isLoading = true;
       });
 
+      print("NAME = '$name'");
+      print("EMAIL = '$email'");
+      print("PASSWORD = '$password'");
+
       await Supabase.instance.client.auth.signUp(
         email: email,
         password: password,

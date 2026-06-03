@@ -160,21 +160,19 @@ class _HistoryPageState
                   ),
 
                   /// FILTER BUTTONS
-                 SizedBox(
-                  height: 50,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
+                 Center(
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        filterButton("Semua", "all"),
+                        filterButton("Catatan", "note"),
+                        filterButton("Selesai", "done_task"),
+                        filterButton("Dihapus", "deleted_task"),
+                      ],
                     ),
-                    children: [
-                      Center(child: filterButton("Semua", "all")),
-                      Center(child: filterButton("Catatan", "note")),
-                      Center(child: filterButton("Selesai", "done_task")),
-                      Center(child: filterButton("Dihapus", "deleted_task")),
-                    ],
                   ),
-                ),
 
                   const SizedBox(
                     height: 10,
