@@ -232,7 +232,7 @@ class _NotesPageState
                   child: const Icon(
                     Icons.notes,
                     color:
-                        Colors.deepPurple,
+                        Color(0xFF7A00CC),
                   ),
                 ),
 
@@ -264,7 +264,7 @@ class _NotesPageState
                   Icons
                       .arrow_forward_ios,
                   size: 16,
-                  color: Colors.grey,
+                  color: Color(0xFFEBCCFF),
                 ),
               ],
             ),
@@ -433,7 +433,7 @@ class _NotesPageState
                             icon: const Icon(
                               Icons.tune,
                               color:
-                                  Color.fromARGB(255, 200, 64, 218),
+                                  Color(0xFF9900FF),
                             ),
 
                             onSelected:
@@ -506,8 +506,7 @@ class _NotesPageState
 
                           style: TextStyle(
                             color:
-                                Colors.grey
-                                    .shade600,
+                                const Color(0xFF757575),
                           ),
                         ),
                       ],
@@ -537,8 +536,7 @@ class _NotesPageState
 
                               size: 90,
 
-                              color: Colors
-                                  .grey[400],
+                              color: const Color(0xFF9900FF),
                             ),
 
                             const SizedBox(

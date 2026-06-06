@@ -237,7 +237,7 @@ class _RegisterPageState
 
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
-                          Colors.deepPurple,
+                          const Color(0xFFAD33FF),
 
                       shape:
                           RoundedRectangleBorder(
@@ -285,7 +285,7 @@ class _RegisterPageState
                       child: const Text(
                         "Login",
                         style: TextStyle(
-                          color: Colors.deepPurple,
+                          color: Color(0xFF5C0099),
                           fontWeight:
                               FontWeight.bold,
                         ),

@@ -102,17 +102,17 @@ class _LoginPageState extends State<LoginPage> {
 
                     children: [
                       Container(
-                        width: 40,
-                        height: 40,
-
+                        width: 50,
+                        height: 50,
                         decoration: BoxDecoration(
-                          color: Colors.deepPurple,
                           borderRadius: BorderRadius.circular(12),
                         ),
-
-                        child: const Icon(
-                          Icons.star,
-                          color: Colors.white,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
 
@@ -252,8 +252,8 @@ class _LoginPageState extends State<LoginPage> {
 
                         gradient: const LinearGradient(
                           colors: [
-                            Color(0xFF7B61FF),
-                            Color(0xFF5A3FFF),
+                            Color(0xFFAD33FF),
+                            Color(0xFFAD33FF),
                           ],
                         ),
                       ),

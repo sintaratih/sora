@@ -286,7 +286,7 @@ class _HistoryPageState
                                               item['type'] ==
                                                       'note'
 
-                                                  ? Colors.blue
+                                                  ? const Color(0xFFAD33FF)
 
                                                   : item['type'] ==
                                                           'task'
@@ -297,8 +297,7 @@ class _HistoryPageState
                                                       : item['type'] ==
                                                               'done_task'
 
-                                                          ? Colors
-                                                              .green
+                                                          ? const Color(0xFFAD33FF)
 
                                                           : Colors
                                                               .red,

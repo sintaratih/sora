@@ -24,13 +24,7 @@ class AboutPage extends StatelessWidget {
             /// LOGO
             CircleAvatar(
               radius: 50,
-              backgroundColor:
-                  Colors.deepPurple.withOpacity(0.1),
-
-              child: const Icon(
-                Icons.auto_stories_rounded,
-                size: 50,
-                color: Colors.deepPurple,
+               backgroundImage: const AssetImage('assets/images/logo.png',
               ),
             ),
 

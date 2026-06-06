@@ -8,7 +8,7 @@ import 'pages/home/home_page.dart';
 import 'pages/history/history_page.dart';
 import 'pages/notes/notes_page.dart';
 import 'pages/settings/settings_page.dart';
-
+import 'package:device_preview/device_preview.dart';
 /// MAIN
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -203,7 +203,7 @@ class _MainPageState extends State<MainPage> {
 
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
-            label: "Riwayat",
+            label: "History",
           ),
 
           BottomNavigationBarItem(

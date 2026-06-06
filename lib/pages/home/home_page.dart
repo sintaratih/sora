@@ -456,7 +456,7 @@ class _HomePageState extends State<HomePage> {
           left: BorderSide(
             color: isDone
                 ? Colors.green
-                : Colors.deepPurple,
+                : const Color(0xFF5C0099),
 
             width: 5,
           ),
@@ -483,7 +483,7 @@ class _HomePageState extends State<HomePage> {
             value: isDone,
 
             activeColor:
-                Colors.deepPurple,
+                const Color(0xFFAD33FF),
 
            onChanged: (val) async {
               await supabase
@@ -635,7 +635,7 @@ class _HomePageState extends State<HomePage> {
 
         border: const Border(
           left: BorderSide(
-            color: Colors.orange,
+            color: Color(0xFF3D0066),
             width: 5,
           ),
         ),
@@ -659,7 +659,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               const Icon(
                 Icons.sticky_note_2,
-                color: Colors.orange,
+                color: Color(0xFFAD33FF),
               ),
 
               const SizedBox(width: 10),
@@ -748,15 +748,13 @@ class _HomePageState extends State<HomePage> {
       ),
 
       icon: const Icon(
-        Icons.add,
-        color: Colors.white,
+        Icons.add, color: Colors.white,
       ),
 
       label: const Text(
         "Tambah",
         style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
+          color: Colors.white, fontWeight: FontWeight.bold,
         ),
       ),
     ),
@@ -774,7 +772,6 @@ class _HomePageState extends State<HomePage> {
               /// GREETING
               Text(
                 "$greeting, $userName 👋",
-
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight:
@@ -788,8 +785,7 @@ class _HomePageState extends State<HomePage> {
                 "Semangat menjalani harimu ✨",
 
                 style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 15,
+                  color: Colors.grey[600], fontSize: 15,
                 ),
               ),
 
@@ -799,8 +795,8 @@ class _HomePageState extends State<HomePage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,                  borderRadius:
-                      BorderRadius.circular(20),
+                    color: Theme.of(context).cardColor,                  
+                    borderRadius: BorderRadius.circular(20),
 
                   boxShadow: [
                     BoxShadow(
