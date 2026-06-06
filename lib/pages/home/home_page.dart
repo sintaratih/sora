@@ -698,37 +698,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-      Widget _summaryItem(
-      IconData icon,
-      String value,
-      String label,
-      Color color,
-    ) {
-      return Column(
-        children: [
-          Icon(
-            icon,
-            color: color,
-            size: 30,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
-      );
-    }
-
   @override
   Widget build(BuildContext context) {
     final tasks = todayTasks;
