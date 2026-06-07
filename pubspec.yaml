@@ -11,7 +11,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  device_preview: ^1.2.0
   cupertino_icons: ^1.0.8
   table_calendar: ^3.0.9
   supabase_flutter: ^2.5.0

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:device_preview/device_preview.dart';
 
 /// PAGES
 import 'pages/auth/login_page.dart';
@@ -8,7 +7,6 @@ import 'pages/home/home_page.dart';
 import 'pages/history/history_page.dart';
 import 'pages/notes/notes_page.dart';
 import 'pages/settings/settings_page.dart';
-import 'package:device_preview/device_preview.dart';
 /// MAIN
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,11 +17,8 @@ void main() async {
   );
 
   runApp(
-    DevicePreview(
-      enabled: true,
-      builder: (context) => const SoraApp(),
-    ),
-  );
+    const SoraApp(),
+    );
 }
 
 /// APP
@@ -49,10 +44,6 @@ class _SoraAppState extends State<SoraApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Sora',
-
-      /// DEVICE PREVIEW
-      locale: DevicePreview.locale(context),
-      builder: DevicePreview.appBuilder,
 
       /// LIGHT THEME
       theme: ThemeData(
