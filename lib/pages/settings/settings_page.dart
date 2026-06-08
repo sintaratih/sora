@@ -47,9 +47,9 @@ class _SettingsPageState
       .select('avatar_url')
       .eq('id', userId)
       .maybeSingle();
-
+  if (!mounted) return;
   setState(() {
-    avatarUrl = data?['avatar_url'];
+    avatarUrl = data?['avatar_url'] ??'';
   });
 }
 
@@ -151,7 +151,7 @@ Future<void> uploadAvatar(File file) async {
                                 backgroundImage: imageFile != null
                                     ? FileImage(imageFile!)
                                     : (avatarUrl != null && avatarUrl!.isNotEmpty)
-                                        ? NetworkImage(avatarUrl!)
+                                        ? NetworkImage('$avatarUrl?t=${DateTime.now().millisecondsSinceEpoch}')
                                         : const NetworkImage('https://ui-avatars.com/api/?name=User')
                                             as ImageProvider,),
 
