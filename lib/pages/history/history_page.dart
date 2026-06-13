@@ -68,16 +68,20 @@ class _HistoryPageState
   }
 
   /// FILTER
-  List<Map<String, dynamic>>
-      get filteredHistory {
-
+    List<Map<String, dynamic>> get filteredHistory {
     if (selectedFilter == "all") {
-      return histories;
+      return histories.where((item) {
+        return item['type'] == 'done_task' ||
+              item['type'] == 'deleted_task';
+      }).toList();
     }
-
+    if (selectedFilter == "deleted") {
+      return histories.where((item) {
+        return item['type'] == 'deleted_task';
+      }).toList();
+    }
     return histories.where((item) {
-      return item['type'] ==
-          selectedFilter;
+      return item['type'] == selectedFilter;
     }).toList();
   }
 
@@ -167,9 +171,8 @@ class _HistoryPageState
                       alignment: WrapAlignment.center,
                       children: [
                         filterButton("Semua", "all"),
-                        filterButton("Catatan", "note"),
                         filterButton("Selesai", "done_task"),
-                        filterButton("Dihapus", "deleted_task"),
+                        filterButton("Dihapus", "deleted"),
                       ],
                     ),
                   ),

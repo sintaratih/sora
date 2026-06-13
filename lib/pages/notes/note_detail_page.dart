@@ -7,8 +7,7 @@ class NoteDetailPage extends StatelessWidget {
   final Map<String, dynamic> note;
 
   const NoteDetailPage({
-    super.key,
-    required this.note,
+    super.key,required this.note,
   });
 
   @override
@@ -46,14 +45,11 @@ class NoteDetailPage extends StatelessWidget {
             const EdgeInsets.all(20),
 
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-
+          crossAxisAlignment:CrossAxisAlignment.start,
           children: [
             /// TITLE
             Text(
               note['title'] ?? '',
-
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -68,11 +64,8 @@ class NoteDetailPage extends StatelessWidget {
             /// DATE
             Text(
               "14 Mei 2026 • 10.30",
-
               style: TextStyle(
-                color:
-                    Colors.grey.shade600,
-
+                color:Colors.grey.shade600,
                 fontSize: 14,
               ),
             ),
@@ -111,40 +104,30 @@ class NoteDetailPage extends StatelessWidget {
               ),
 
               child: Row(
-                mainAxisAlignment:
-                    MainAxisAlignment
-                        .spaceAround,
-
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-
                   /// EDIT
                   GestureDetector(
                     onTap: () async {
-
                       await Navigator.push(
                         context,
 
                         MaterialPageRoute(
-                          builder: (_) =>
-                              AddNotePage(
-                            note: note,
+                          builder: (_) => AddNotePage( note: note,
                           ),
                         ),
                       );
                     },
 
                     child: Column(
-                      mainAxisSize:
-                          MainAxisSize.min,
-
+                      mainAxisSize:MainAxisSize.min,
                       children: [
-
                         Icon(
                           Icons.edit_outlined,
-                          color: isDark
-                        ? Colors.white70
-                        : Colors.grey.shade700,
-                        ),
+                            color: isDark
+                          ? Colors.white70
+                          : Colors.grey.shade700,
+                          ),
 
                         const SizedBox(height: 6,),
 
@@ -163,11 +146,8 @@ class NoteDetailPage extends StatelessWidget {
                   /// DELETE
                   GestureDetector(
                     onTap: () async {
-
-                      await NoteService()
-                          .deleteNote(
-                        note['id']
-                            .toString(),
+                      await NoteService().deleteNote(
+                        note['id'] .toString(),
                       );
 
                       if (context.mounted) {

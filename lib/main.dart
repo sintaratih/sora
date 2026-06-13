@@ -7,6 +7,8 @@ import 'pages/home/home_page.dart';
 import 'pages/history/history_page.dart';
 import 'pages/notes/notes_page.dart';
 import 'pages/settings/settings_page.dart';
+import 'services/notification_service.dart';
+
 /// MAIN
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +17,8 @@ void main() async {
     url: 'https://tchpgvkehtkjobultzge.supabase.co',
     anonKey: 'sb_publishable_qX5G5mF7-ZFaI_oh6esoUA_P_NP_-bc',
   );
+    
+  await NotificationService.init();
 
   runApp(
     const SoraApp(),

@@ -16,33 +16,22 @@ class AddNotePage extends StatefulWidget {
 }
 
 class _AddNotePageState
-    extends State<AddNotePage> {
+  extends State<AddNotePage> {
 
   final noteService = NoteService();
-
-  final supabase =
-      Supabase.instance.client;
-
-  final titleController =
-      TextEditingController();
-
-  final contentController =
-      TextEditingController();
-
-  bool get isEdit =>
-      widget.note != null;
+  final supabase = Supabase.instance.client;
+  final titleController = TextEditingController();
+  final contentController = TextEditingController();
+     
+  bool get isEdit => widget.note != null;
 
   @override
   void initState() {
     super.initState();
 
     if (isEdit) {
-
-      titleController.text =
-          widget.note!['title'] ?? '';
-
-      contentController.text =
-          widget.note!['content'] ?? '';
+      titleController.text = widget.note!['title'] ?? '';
+      contentController.text = widget.note!['content'] ?? '';
     }
   }
 
@@ -56,14 +45,10 @@ class _AddNotePageState
   /// SAVE NOTE
   Future<void> saveNote() async {
 
-    final title =
-        titleController.text.trim();
+    final title = titleController.text.trim();
+    final content = contentController.text.trim();
 
-    final content =
-        contentController.text.trim();
-
-    if (title.isEmpty ||
-        content.isEmpty) {
+    if (title.isEmpty || content.isEmpty) {
 
       ScaffoldMessenger.of(context)
           .showSnackBar(
@@ -72,20 +57,15 @@ class _AddNotePageState
               Text("Isi semua field"),
         ),
       );
-
       return;
     }
 
     try {
-
       /// EDIT NOTE
       if (isEdit) {
 
         await noteService.updateNote(
-          id:
-              widget.note!['id']
-                  .toString(),
-
+          id: widget.note!['id'].toString(),
           title: title,
           content: content,
         );
@@ -93,30 +73,10 @@ class _AddNotePageState
 
       /// ADD NOTE
       else {
-
         await noteService.addNote(
           title: title,
           content: content,
         );
-
-        /// INSERT HISTORY
-        await supabase
-            .from('history')
-            .insert({
-
-          'user_id':
-              supabase
-                  .auth
-                  .currentUser!
-                  .id,
-
-          'title': title,
-
-          'description':
-              content,
-
-          'type': 'note',
-        });
       }
 
       if (!mounted) return;
@@ -125,8 +85,7 @@ class _AddNotePageState
 
     } catch (e) {
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             "Error: $e",
@@ -139,14 +98,9 @@ class _AddNotePageState
   /// DELETE NOTE
   Future<void> deleteNote() async {
 
-    final confirm =
-        await showDialog(
-
+    final confirm = await showDialog(
       context: context,
-
-      builder: (context) =>
-          AlertDialog(
-
+      builder: (context) => AlertDialog(
         title: const Text(
           "Hapus Catatan",
         ),
@@ -156,7 +110,6 @@ class _AddNotePageState
         ),
 
         actions: [
-
           TextButton(
             onPressed: () {
 
@@ -182,8 +135,7 @@ class _AddNotePageState
 
             style:
                 ElevatedButton.styleFrom(
-              backgroundColor:
-                  Colors.red,
+              backgroundColor: Colors.red,
             ),
 
             child: const Text(
@@ -195,31 +147,8 @@ class _AddNotePageState
     );
 
     if (confirm == true) {
-
-      /// INSERT DELETE HISTORY
-      await supabase
-          .from('history')
-          .insert({
-
-        'user_id':
-            supabase
-                .auth
-                .currentUser!
-                .id,
-
-        'title':
-            widget.note!['title'],
-
-        'description':
-            'Catatan dihapus',
-
-        'type':
-            'deleted_task',
-      });
-
       await noteService.deleteNote(
-        widget.note!['id']
-            .toString(),
+        widget.note!['id'] .toString(),
       );
 
       if (!mounted) return;
@@ -231,25 +160,22 @@ class _AddNotePageState
   @override
   Widget build(BuildContext context) {
     final isDark =
-    Theme.of(context).brightness ==
-    Brightness.dark;
-
+    Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       backgroundColor: isDark
           ? const Color(0xFF121212)
           : const Color(0xFFF5F5F5),
 
     appBar: AppBar(
-      backgroundColor:
-      isDark
+      backgroundColor:isDark
           ? const Color(0xFF1E1E1E)
           : Colors.white,
 
       elevation: 0,
 
       iconTheme: IconThemeData(
-        color:
-            isDark
+        color:isDark
                 ? Colors.white
                 : Colors.black,
       ),
@@ -268,15 +194,10 @@ class _AddNotePageState
     ),
 
       body: SingleChildScrollView(
-        padding:
-            const EdgeInsets.all(20),
-
+        padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             /// TITLE
             Text(
               "Judul",
@@ -331,7 +252,6 @@ class _AddNotePageState
             /// CONTENT
             Text(
               "Isi Catatan",
-
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -390,21 +310,11 @@ class _AddNotePageState
               height: 55,
 
               child: ElevatedButton(
-                onPressed:
-                    saveNote,
-
-                style:
-                    ElevatedButton.styleFrom(
-
-                  backgroundColor:
-                      Colors.deepPurple,
-
-                  shape:
-                      RoundedRectangleBorder(
-
-                    borderRadius:
-                        BorderRadius
-                            .circular(16),
+                onPressed:saveNote,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:Colors.deepPurple,
+                  shape:RoundedRectangleBorder(
+                    borderRadius:BorderRadius.circular(16),
                   ),
                 ),
 
@@ -414,16 +324,10 @@ class _AddNotePageState
                       ? "Update"
                       : "Simpan",
 
-                  style:
-                      const TextStyle(
-
-                    color:
-                        Colors.white,
-
+                  style:const TextStyle(
+                    color:Colors.white,    
                     fontSize: 16,
-
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -441,22 +345,11 @@ class _AddNotePageState
                 height: 55,
 
                 child: ElevatedButton(
-                  onPressed:
-                      deleteNote,
-
-                  style:
-                      ElevatedButton.styleFrom(
-
-                    backgroundColor:
-                        Colors.red,
-
-                    shape:
-                        RoundedRectangleBorder(
-
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                        16,
+                  onPressed:deleteNote,
+                  style:ElevatedButton.styleFrom(
+                    backgroundColor:Colors.red,
+                    shape:RoundedRectangleBorder(
+                      borderRadius:BorderRadius.circular(16,
                       ),
                     ),
                   ),
@@ -465,13 +358,9 @@ class _AddNotePageState
                     "Hapus Catatan",
 
                     style: TextStyle(
-                      color:
-                          Colors.white,
-
+                      color:Colors.white,
                       fontSize: 16,
-
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight:FontWeight.bold,  
                     ),
                   ),
                 ),

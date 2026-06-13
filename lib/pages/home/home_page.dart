@@ -65,20 +65,15 @@ class _HomePageState extends State<HomePage> {
   /// USER NAME
   String get userName {
     final user = supabase.auth.currentUser;
-
     if (user == null) return "User";
-
     final name = user.userMetadata?['name'];
-
     if (name != null && name != "") return name;
-
     return user.email?.split('@')[0] ?? "User";
   }
 
   /// GREETING
   String get greeting {
     final hour = DateTime.now().hour;
-
     if (hour < 10) return "Selamat pagi";
     if (hour < 14) return "Selamat siang";
     if (hour < 19) return "Selamat sore";
@@ -87,7 +82,6 @@ class _HomePageState extends State<HomePage> {
 
     String get dayLabel {
     final now = DateTime.now();
-
     final today = DateTime(now.year, now.month, now.day);
     final selected = DateTime(
       selectedDay.year,
@@ -109,13 +103,9 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> get todayTasks {
     return allTasks.where((task) {
       final rawDate = task['date'];
-
       if (rawDate == null) return false;
-
       final d = DateTime.tryParse(rawDate);
-
       if (d == null) return false;
-
       return d.year == selectedDay.year &&
           d.month == selectedDay.month &&
           d.day == selectedDay.day;
@@ -125,13 +115,9 @@ class _HomePageState extends State<HomePage> {
   List<dynamic> getEventsForDay(DateTime day) {
   return allTasks.where((task) {
     final rawDate = task['date'];
-
     if (rawDate == null) return false;
-
     final d = DateTime.tryParse(rawDate);
-
     if (d == null) return false;
-
     return d.year == day.year &&
         d.month == day.month &&
         d.day == day.day;
@@ -145,11 +131,8 @@ class _HomePageState extends State<HomePage> {
           note['created_at']?.toString();
 
       if (rawDate == null) return false;
-
       final d = DateTime.tryParse(rawDate);
-
       if (d == null) return false;
-
       return d.year == selectedDay.year &&
           d.month == selectedDay.month &&
           d.day == selectedDay.day;
@@ -174,11 +157,8 @@ class _HomePageState extends State<HomePage> {
 
   /// ADD TASK
   void _addTask() {
-    final titleController =
-        TextEditingController();
-
-    final descController =
-        TextEditingController();
+    final titleController = TextEditingController();
+    final descController = TextEditingController();
 
     TimeOfDay? selectedTime;
 
@@ -186,11 +166,9 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder:
-            (ctx, setStateDialog) =>
-                AlertDialog(
+            (ctx, setStateDialog) => AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24),
           ),
 
           title: const Text(
@@ -198,18 +176,13 @@ class _HomePageState extends State<HomePage> {
           ),
 
           content: Column(
-            mainAxisSize:
-                MainAxisSize.min,
+            mainAxisSize: MainAxisSize.min,
 
             children: [
               TextField(
-                controller:
-                    titleController,
-
-                decoration:
-                    const InputDecoration(
-                  labelText:
-                      "Nama Agenda",
+                controller:titleController,
+                decoration:const InputDecoration(
+                  labelText:"Nama Agenda",
                 ),
               ),
 
@@ -218,13 +191,9 @@ class _HomePageState extends State<HomePage> {
               ),
 
               TextField(
-                controller:
-                    descController,
-
-                decoration:
-                    const InputDecoration(
-                  labelText:
-                      "Deskripsi",
+                controller:descController,
+                decoration:const InputDecoration(
+                  labelText:"Deskripsi",
                 ),
               ),
 
@@ -235,45 +204,28 @@ class _HomePageState extends State<HomePage> {
               Row(
                 children: [
                   Text(
-                    selectedTime ==
-                            null
+                    selectedTime ==null
                         ? "Pilih Jam"
-                        : selectedTime!
-                            .format(
-                            context,
-                          ),
+                        : selectedTime!.format(context,),
                   ),
 
                   const Spacer(),
-
                   TextButton(
-                    onPressed:
-                        () async {
-                      final time =
-                          await showTimePicker(
-                        context:
-                            context,
-
-                        initialTime:
-                            TimeOfDay
-                                .now(),
+                    onPressed:() async {
+                      final time = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
                       );
 
-                      if (time !=
-                          null) {
+                      if (time !=null) {
                         setStateDialog(
                           () {
-                            selectedTime =
-                                time;
+                            selectedTime = time;
                           },
                         );
                       }
                     },
-
-                    child:
-                        const Text(
-                      "Set",
-                    ),
+                    child:const Text( "Set"),
                   )
                 ],
               )
@@ -282,8 +234,7 @@ class _HomePageState extends State<HomePage> {
 
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.pop(
+              onPressed: () => Navigator.pop(
                 ctx,
               ),
 
@@ -294,69 +245,35 @@ class _HomePageState extends State<HomePage> {
 
             ElevatedButton(
               onPressed: () async {
-                if (titleController
-                    .text
-                    .trim()
-                    .isEmpty) {
+                if (titleController.text.trim().isEmpty){
                   return;
                 }
 
-                final user =
-                    supabase
-                        .auth
-                        .currentUser;
-
-                await supabase
-                    .from('task')
-                    .insert({
-                  'user_id':
-                      user!.id,
-
-                  'title':
-                      titleController
-                          .text
-                          .trim(),
-
-                  'description':
-                      descController
-                          .text
-                          .trim(),
-
-                  'is_done':
-                      false,
-
+                final user =supabase.auth.currentUser;
+                await supabase.from('task').insert({  
+                  
+                  'user_id': user!.id,
+                  'title': titleController.text.trim(),
+                  'description':descController.text.trim(),
+                  'is_done':false,
                   'date': DateTime(
                     selectedDay.year,
                     selectedDay.month,
                     selectedDay.day,
                   ).toIso8601String(),
 
-                  'time':
-                      selectedTime
-                          ?.format(
+                  'time': selectedTime?.format(
                     context,
                   ),
                 });
 
                 /// HISTORY
-                await supabase
-                    .from('history')
-                    .insert({
-                  'user_id':
-                      user.id,
-
-                  'title':
-                      titleController
-                          .text
-                          .trim(),
-
-                  'description':
-                      'Agenda baru ditambahkan',
-
-                  'type':
-                      'note',
+                await supabase.from('history').insert({
+                  'user_id': user.id,
+                  'title': titleController.text.trim(),
+                  'description': 'Agenda baru ditambahkan',
+                  'type': 'task',
                 });
-
                 await loadTasks();
 
                 Navigator.pop(
@@ -381,21 +298,16 @@ class _HomePageState extends State<HomePage> {
 
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius:
-              BorderRadius.circular(24),
+          borderRadius:BorderRadius.circular(24),
         ),
-
         title: const Text("Hapus"),
-
         content: const Text(
           "Yakin mau hapus agenda ini?",
         ),
 
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(ctx),
-
+            onPressed: () => Navigator.pop(ctx),
             child: const Text(
               "Batal",
             ),
@@ -434,30 +346,21 @@ class _HomePageState extends State<HomePage> {
 
   /// TASK CARD
   Widget _taskCard(Map task) {
-    final isDone =
-        task['is_done'] ?? false;
-
+    final isDone = task['is_done'] ?? false;
+        
     return Container(
-      margin:
-          const EdgeInsets.only(
+      margin:const EdgeInsets.only(
         bottom: 14,
       ),
-
-      padding:
-          const EdgeInsets.all(16),
-
+      padding:const EdgeInsets.all(16),
       decoration: BoxDecoration(
        color: Theme.of(context).cardColor,
-
-        borderRadius:
-            BorderRadius.circular(20),
-
+        borderRadius: BorderRadius.circular(20),
         border: Border(
           left: BorderSide(
             color: isDone
                 ? Colors.green
                 : const Color(0xFF5C0099),
-
             width: 5,
           ),
         ),
@@ -465,10 +368,7 @@ class _HomePageState extends State<HomePage> {
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
-
-            color: Colors.black
-                .withOpacity(0.05),
-
+            color: Colors.black.withOpacity(0.05),
             offset: const Offset(
               0,
               4,
@@ -486,8 +386,7 @@ class _HomePageState extends State<HomePage> {
                 const Color(0xFFAD33FF),
 
            onChanged: (val) async {
-              await supabase
-                  .from('task')
+              await supabase.from('task')
                   .update({
                     'is_done': val ?? false,
                   })
@@ -529,23 +428,15 @@ class _HomePageState extends State<HomePage> {
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
-
+              crossAxisAlignment:CrossAxisAlignment.start,
               children: [
                 Text(
                   task['title'],
-
                   style: TextStyle(
-                    fontWeight:
-                        FontWeight.bold,
-
+                    fontWeight:FontWeight.bold,
                     fontSize: 16,
-
                     decoration: isDone
-                        ? TextDecoration
-                            .lineThrough
+                        ? TextDecoration.lineThrough
                         : null,
                   ),
                 ),
@@ -554,20 +445,17 @@ class _HomePageState extends State<HomePage> {
                   height: 6,
                 ),
 
-                if (task['description'] !=
-                        null &&
-                    task['description'] !=
-                        '')
+                if (task['description'] != null &&
+                    task['description'] !='')
+
                   Text(
                     task['description'],
 
                     style: TextStyle(
-                      color:
-                          Colors.grey[600],
-
+                      color:Colors.grey[600],
+                          
                       decoration: isDone
-                          ? TextDecoration
-                              .lineThrough
+                          ? TextDecoration.lineThrough
                           : null,
                     ),
                   ),
@@ -582,8 +470,7 @@ class _HomePageState extends State<HomePage> {
                       const Icon(
                         Icons.access_time,
                         size: 16,
-                        color:
-                            Colors.deepPurple,
+                        color: Colors.deepPurple,
                       ),
 
                       const SizedBox(
@@ -605,8 +492,7 @@ class _HomePageState extends State<HomePage> {
               color: Colors.red,
             ),
 
-            onPressed: () =>
-                _deleteTask(
+            onPressed: () => _deleteTask(
               task['id'],
               task['title'],
             ),
@@ -624,8 +510,7 @@ class _HomePageState extends State<HomePage> {
         bottom: 14,
       ),
 
-      padding:
-          const EdgeInsets.all(16),
+      padding:const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
@@ -770,7 +655,6 @@ class _HomePageState extends State<HomePage> {
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 10,
-
                       color: Colors.black
                           .withOpacity(
                         0.04,

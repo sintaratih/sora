@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -227,20 +226,6 @@ class _LoginPageState extends State<LoginPage> {
                       return null;
                     },
                   ),
-
-                  Align(
-                    alignment: Alignment.centerRight,
-
-                    child: TextButton(
-                      onPressed: () {},
-
-                      child: const Text(
-                        "Lupa password?",
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
 
                   /// BUTTON LOGIN
                   SizedBox(

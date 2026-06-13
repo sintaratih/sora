@@ -3,8 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../auth/login_page.dart';
 import 'about_page.dart';
 import 'help_center_page.dart';
-import 'dart:io';
-import 'package:image_picker/image_picker.dart';
+
 
 class SettingsPage extends StatefulWidget {
   final bool isDark;
@@ -17,75 +16,21 @@ class SettingsPage extends StatefulWidget {
   });
 
   @override
-  State<SettingsPage> createState() =>
-      _SettingsPageState();
+  State<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState
     extends State<SettingsPage> {
-  late bool isDarkMode;
-  bool notificationsEnabled = true;
+  late bool isDarkMode; bool notificationsEnabled = true;
 
   final supabase = Supabase.instance.client;
-  final ImagePicker picker = ImagePicker();
-
-  File? imageFile;
-  String? avatarUrl;
 
   @override
-  void initState() {
-    super.initState();
-    isDarkMode = widget.isDark;
-    loadAvatar();
-  }
-  
-  Future<void> loadAvatar() async {
-  final userId = supabase.auth.currentUser!.id;
+    void initState() {
+      super.initState();
+      isDarkMode = widget.isDark;
+    }
 
-  final data = await supabase
-      .from('profiles')
-      .select('avatar_url')
-      .eq('id', userId)
-      .maybeSingle();
-  if (!mounted) return;
-  setState(() {
-    avatarUrl = data?['avatar_url'] ??'';
-  });
-}
-
-Future<void> pickImage() async {
-  final picked = await picker.pickImage(source: ImageSource.gallery);
-
-  if (picked == null) return;
-
-  imageFile = File(picked.path);
-
-  await uploadAvatar(imageFile!);
-}
-Future<void> uploadAvatar(File file) async {
-  final userId = supabase.auth.currentUser!.id;
-  final path = 'avatars/$userId/avatar.png';
-
-  await supabase.storage
-      .from('avatars')
-      .upload(
-        path,
-        file,
-        fileOptions: const FileOptions(upsert: true),
-      );
-
-  final url = supabase.storage
-      .from('avatars')
-      .getPublicUrl(path);
-
-  await supabase.from('profiles').update({
-    'avatar_url': url,
-  }).eq('id', userId);
-
-  setState(() {
-    avatarUrl = url;
-  });
-}
   @override
   Widget build(BuildContext context) {
     final isDark =
@@ -142,37 +87,13 @@ Future<void> uploadAvatar(File file) async {
 
                     child: Row(
                       children: [
-                        GestureDetector(
-                          onTap: pickImage,
-                          child: Stack(
-                            children: [
-                              CircleAvatar(
-                                radius: 32,
-                                backgroundImage: imageFile != null
-                                    ? FileImage(imageFile!)
-                                    : (avatarUrl != null && avatarUrl!.isNotEmpty)
-                                        ? NetworkImage('$avatarUrl?t=${DateTime.now().millisecondsSinceEpoch}')
-                                        : const NetworkImage('https://ui-avatars.com/api/?name=User')
-                                            as ImageProvider,),
-
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white),
-                                  ),
-                                  child: const Icon(
-                                    Icons.camera_alt,
-                                    size: 14,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
+                        CircleAvatar(
+                          radius: 32,
+                          backgroundColor: Colors.deepPurple.withOpacity(0.15),
+                          child: const Icon(
+                            Icons.person,
+                            size: 35,
+                            color: Colors.deepPurple,
                           ),
                         ),
 
